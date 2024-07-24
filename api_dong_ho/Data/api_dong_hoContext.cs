@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using api_dong_ho.Models;
+using WebBanGiay.Models;
 
 namespace api_dong_ho.Data
 {
@@ -14,7 +14,6 @@ namespace api_dong_ho.Data
         {
         }
 
-        public DbSet<api_dong_ho.Models.SanPham> SanPham { get; set; } = default!;
-        public DbSet<api_dong_ho.Models.Loai> Loais { get; set; } = default!;
+        public DbSet<WebBanGiay.Models.SanPham> SanPham { get; set; } = default!;
     }
 }
