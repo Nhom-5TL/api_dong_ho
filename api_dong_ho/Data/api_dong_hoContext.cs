@@ -16,5 +16,6 @@ namespace api_dong_ho.Data
 
         public DbSet<api_dong_ho.Models.SanPham> SanPham { get; set; } = default!;
         public DbSet<api_dong_ho.Models.Loai> Loais { get; set; } = default!;
+        public DbSet<api_dong_ho.Models.NhanHieu> NhanHieus { get; set; } = default!;
     }
 }
