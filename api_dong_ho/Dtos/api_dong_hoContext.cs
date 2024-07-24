@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using WebBanGiay.Models;
+using api_dong_ho.Models;
 
 namespace api_dong_ho.Data
 {
