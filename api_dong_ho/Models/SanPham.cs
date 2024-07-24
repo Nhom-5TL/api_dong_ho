@@ -1,7 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using api_dong_ho.Models;
 
-namespace WebBanGiay.Models
+namespace api_dong_ho.Models
 {
     public class SanPham
     {
@@ -29,6 +30,8 @@ namespace WebBanGiay.Models
         [Required(ErrorMessage = "Yêu cầu chọn loại sản phẩm")]
         [Range(1, int.MaxValue, ErrorMessage = "Yêu cầu chọn loại sản phẩm")]
         public int MaLoai { get; set; }
+        [ForeignKey("MaLoai")]
+        public Loai? Loais { get; set; }
 
         [Required(ErrorMessage = "Yêu cầu chọn nhãn hiệu sản phẩm")]
         [Range(1, int.MaxValue, ErrorMessage = "Yêu cầu chọn thương hiệu sản phẩm")]

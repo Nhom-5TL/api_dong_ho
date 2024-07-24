@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using WebBanGiay.Models;
+using api_dong_ho.Models;
 using api_dong_ho.Data;
 
 namespace api_dong_ho.Controllers
