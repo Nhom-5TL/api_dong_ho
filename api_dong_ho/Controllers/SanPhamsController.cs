@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using api_dong_ho.Models;
 using api_dong_ho.Data;
+using api_dong_ho.Dtos;
 
 namespace api_dong_ho.Controllers
 {
@@ -44,13 +45,26 @@ namespace api_dong_ho.Controllers
 
         // PUT: api/SanPhams/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutSanPham(int id, SanPham sanPham)
+        [HttpPut]
+        public async Task<IActionResult> PutSanPham([FromBody] PutSanPham putSanPham)
         {
+            int id = putSanPham.MaSP;
+            var sanPham = await _context.SanPham.Include(v => v.NhanHieus).Include(v => v.Loais)
+                .FirstOrDefaultAsync(sp => sp.MaSP == id);
             if (id != sanPham.MaSP)
             {
                 return BadRequest();
             }
+
+            sanPham.TenSP = putSanPham.TenSP;
+            sanPham.MoTa = putSanPham.MoTa;
+            sanPham.Gia = putSanPham.Gia;
+            sanPham.HTVC = putSanPham.HTVC;
+            sanPham.MaNhanHieu = putSanPham.MaNhanHieu;
+            sanPham.MaLoai = putSanPham.MaLoai;
+            sanPham.TrangThai = putSanPham.TrangThai;
+            sanPham.HinhAnh = putSanPham.HinhAnh;
+
 
             _context.Entry(sanPham).State = EntityState.Modified;
 
@@ -70,7 +84,7 @@ namespace api_dong_ho.Controllers
                 }
             }
 
-            return NoContent();
+            return Ok(GetSanPham());
         }
 
         // POST: api/SanPhams
@@ -78,6 +92,22 @@ namespace api_dong_ho.Controllers
         [HttpPost]
         public async Task<ActionResult<SanPham>> PostSanPham(SanPham sanPham)
         {
+            //var imagesDirectory = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/hinh");
+
+
+            //if (!Directory.Exists(imagesDirectory))
+            //{
+            //    Directory.CreateDirectory(imagesDirectory);
+            //}
+
+            //var fileName = Path.GetFileName(sanPham.HinhAnh);
+            //var filePath = Path.Combine(imagesDirectory, fileName);
+
+            //using (var stream = new FileStream(filePath, FileMode.Create))
+            //{
+            //    await sanPham.CopyToAsync(stream);
+            //}
+
             _context.SanPham.Add(sanPham);
             await _context.SaveChangesAsync();
 
