@@ -90,23 +90,28 @@ namespace api_dong_ho.Controllers
         // POST: api/SanPhams
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<SanPham>> PostSanPham(SanPham sanPham)
+        public async Task<ActionResult<SanPham>> PostSanPham(SanPham sanPham, IFormFile hinhAnh)
         {
-            //var imagesDirectory = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/hinh");
+            if (hinhAnh == null || hinhAnh.Length == 0)
+            {
+                return BadRequest("Hình ảnh không hợp lệ.");
+            }
+            var imagesDirectory = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/hinh");
 
+            if (!Directory.Exists(imagesDirectory))
+            {
+                Directory.CreateDirectory(imagesDirectory);
+            }
 
-            //if (!Directory.Exists(imagesDirectory))
-            //{
-            //    Directory.CreateDirectory(imagesDirectory);
-            //}
+            var fileName = Path.GetFileName(hinhAnh.FileName);
+            var filePath = Path.Combine(imagesDirectory, fileName);
 
-            //var fileName = Path.GetFileName(sanPham.HinhAnh);
-            //var filePath = Path.Combine(imagesDirectory, fileName);
-
-            //using (var stream = new FileStream(filePath, FileMode.Create))
-            //{
-            //    await sanPham.CopyToAsync(stream);
-            //}
+            // Lưu tệp hình ảnh vào thư mục
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await hinhAnh.CopyToAsync(stream);
+            }
+            sanPham.HinhAnh = fileName;
 
             _context.SanPham.Add(sanPham);
             await _context.SaveChangesAsync();
