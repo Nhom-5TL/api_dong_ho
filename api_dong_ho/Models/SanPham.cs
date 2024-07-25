@@ -21,10 +21,9 @@ namespace api_dong_ho.Models
         [RegularExpression("^[0-9]*$", ErrorMessage = "Giá sản phẩm chỉ được nhập số")]
         public int Gia { get; set; }
 
-        [Required(ErrorMessage = "Yêu cầu chọn hình thức vận chuyển")]
-        public int HTVC { get; set; }
+        public int HTVC { get; set; } = 1;
 
-        [Required(ErrorMessage = "Yêu cầu chọn trạng thái")]
+
         public int TrangThai { get; set; } = 1;
 
         [Required(ErrorMessage = "Yêu cầu chọn loại sản phẩm")]
@@ -41,6 +40,9 @@ namespace api_dong_ho.Models
         public NhanHieu? NhanHieus { get; set; }
 
         public string? HinhAnh { get; set; }
+
+        [NotMapped]
+        public IFormFile? HinhAnhTaiLen { get; set; }
 
     }
 }

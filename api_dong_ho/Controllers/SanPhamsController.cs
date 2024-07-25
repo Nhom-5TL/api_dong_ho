@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -16,10 +17,12 @@ namespace api_dong_ho.Controllers
     public class SanPhamsController : ControllerBase
     {
         private readonly api_dong_hoContext _context;
+        private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public SanPhamsController(api_dong_hoContext context)
+        public SanPhamsController(api_dong_hoContext context, IWebHostEnvironment webHostEnvironment)
         {
             _context = context;
+            _webHostEnvironment = webHostEnvironment;
         }
 
         // GET: api/SanPhams
@@ -44,27 +47,46 @@ namespace api_dong_ho.Controllers
         }
 
         // PUT: api/SanPhams/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut]
-        public async Task<IActionResult> PutSanPham([FromBody] PutSanPham putSanPham)
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutSanPham(int id, [FromForm] PutSanPham putSanPham, IFormFile? hinhanhtailen)
         {
-            int id = putSanPham.MaSP;
             var sanPham = await _context.SanPham.Include(v => v.NhanHieus).Include(v => v.Loais)
                 .FirstOrDefaultAsync(sp => sp.MaSP == id);
-            if (id != sanPham.MaSP)
+            if (sanPham == null)
             {
-                return BadRequest();
+                return NotFound();
             }
 
             sanPham.TenSP = putSanPham.TenSP;
             sanPham.MoTa = putSanPham.MoTa;
             sanPham.Gia = putSanPham.Gia;
-            sanPham.HTVC = putSanPham.HTVC;
             sanPham.MaNhanHieu = putSanPham.MaNhanHieu;
             sanPham.MaLoai = putSanPham.MaLoai;
-            sanPham.TrangThai = putSanPham.TrangThai;
-            sanPham.HinhAnh = putSanPham.HinhAnh;
 
+            if (hinhanhtailen != null)
+            {
+                // Xóa ảnh cũ nếu có
+                if (!string.IsNullOrEmpty(sanPham.HinhAnh))
+                {
+                    var oldImagePath = Path.Combine(_webHostEnvironment.WebRootPath, "media/SanPham", sanPham.HinhAnh);
+                    if (System.IO.File.Exists(oldImagePath))
+                    {
+                        System.IO.File.Delete(oldImagePath);
+                    }
+                }
+
+                // Tải lên ảnh mới
+                string uploadDir = Path.Combine(_webHostEnvironment.WebRootPath, "media/SanPham");
+                string imageName = Guid.NewGuid().ToString() + "_" + hinhanhtailen.FileName;
+                string filePath = Path.Combine(uploadDir, imageName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await hinhanhtailen.CopyToAsync(stream);
+                }
+
+                sanPham.HinhAnh = imageName;
+            }
 
             _context.Entry(sanPham).State = EntityState.Modified;
 
@@ -84,40 +106,35 @@ namespace api_dong_ho.Controllers
                 }
             }
 
-            return Ok(GetSanPham());
+            return Ok(await _context.SanPham.ToListAsync());
         }
 
+
         // POST: api/SanPhams
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<SanPham>> PostSanPham(SanPham sanPham)
+        public async Task<ActionResult<SanPham>> PostSanPham([FromForm] SanPham sanPham, IFormFile hinhanhtailen)
         {
-            //if (hinhAnh == null || hinhAnh.Length == 0)
-            //{
-            //    return BadRequest("Hình ảnh không hợp lệ.");
-            //}
-            //var imagesDirectory = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/hinh");
+            if (hinhanhtailen != null)
+            {
+                string uploadDir = Path.Combine(_webHostEnvironment.WebRootPath, "media/SanPham");
+                string imageName = Guid.NewGuid().ToString() + "_" + hinhanhtailen.FileName;
+                string filePath = Path.Combine(uploadDir, imageName);
 
-            //if (!Directory.Exists(imagesDirectory))
-            //{
-            //    Directory.CreateDirectory(imagesDirectory);
-            //}
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await hinhanhtailen.CopyToAsync(stream);
+                }
 
-            //var fileName = Path.GetFileName(hinhAnh.FileName);
-            //var filePath = Path.Combine(imagesDirectory, fileName);
-
-            //// Lưu tệp hình ảnh vào thư mục
-            //using (var stream = new FileStream(filePath, FileMode.Create))
-            //{
-            //    await hinhAnh.CopyToAsync(stream);
-            //}
-            //sanPham.HinhAnh = fileName;
+                sanPham.HinhAnh = imageName;
+            }
 
             _context.SanPham.Add(sanPham);
             await _context.SaveChangesAsync();
 
             return CreatedAtAction("GetSanPham", new { id = sanPham.MaSP }, sanPham);
         }
+
+
 
         // DELETE: api/SanPhams/5
         [HttpDelete("{id}")]
@@ -129,11 +146,22 @@ namespace api_dong_ho.Controllers
                 return NotFound();
             }
 
+
+            if (!string.IsNullOrEmpty(sanPham.HinhAnh))
+            {
+                var oldImagePath = Path.Combine(_webHostEnvironment.WebRootPath, "media/SanPham", sanPham.HinhAnh);
+                if (System.IO.File.Exists(oldImagePath))
+                {
+                    System.IO.File.Delete(oldImagePath);
+                }
+            }
+
             _context.SanPham.Remove(sanPham);
             await _context.SaveChangesAsync();
 
             return NoContent();
         }
+
 
         private bool SanPhamExists(int id)
         {

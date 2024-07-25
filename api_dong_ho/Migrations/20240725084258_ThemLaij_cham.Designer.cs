@@ -11,8 +11,8 @@ using api_dong_ho.Data;
 namespace api_dong_ho.Migrations
 {
     [DbContext(typeof(api_dong_hoContext))]
-    [Migration("20240724065544_Create_ef_datpt")]
-    partial class Create_ef_datpt
+    [Migration("20240725084258_ThemLaij_cham")]
+    partial class ThemLaij_cham
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

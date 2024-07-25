@@ -19,9 +19,6 @@ namespace api_dong_ho.Dtos
         [Required(ErrorMessage = "Yêu cầu nhập giá sản phẩm")]
         [RegularExpression("^[0-9]*$", ErrorMessage = "Giá sản phẩm chỉ được nhập số")]
         public int Gia { get; set; }
-        public int HTVC { get; set; }
-
-        public int TrangThai { get; set; } = 1;
 
         [Required(ErrorMessage = "Yêu cầu chọn loại sản phẩm")]
         [Range(1, int.MaxValue, ErrorMessage = "Yêu cầu chọn loại sản phẩm")]
@@ -32,6 +29,7 @@ namespace api_dong_ho.Dtos
         public int MaNhanHieu { get; set; }
 
         public string? HinhAnh { get; set; }
+        public IFormFile? HinhAnhTaiLen { get; set; }
 
     }
 }
