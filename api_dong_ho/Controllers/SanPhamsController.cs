@@ -31,6 +31,23 @@ namespace api_dong_ho.Controllers
         {
             return await _context.SanPham.ToListAsync();
         }
+        // GET: api/Image/5
+        [HttpGet]
+        [Route("get-pro-img/{fileName}")]
+        public async Task<ActionResult> GetImageName(string fileName)
+        {
+            var imagePath = Path.Combine("wwwroot", "media", "SanPham", fileName); // Đường dẫn tới hình ảnh trong thư mục wwwroot
+
+            if (System.IO.File.Exists(imagePath))
+            {
+                var imageBytes = System.IO.File.ReadAllBytes(imagePath);
+                return File(imageBytes, "image/jpeg"); // Trả về hình ảnh dưới dạng file stream
+            }
+            else
+            {
+                return NotFound(); // Không tìm thấy hình ảnh
+            }
+        }
 
         // GET: api/SanPhams/5
         [HttpGet("{id}")]

@@ -35,7 +35,7 @@ namespace api_dong_ho.Migrations
 
                     b.HasKey("MaLoai");
 
-                    b.ToTable("Loais");
+                    b.ToTable("Loais", (string)null);
                 });
 
             modelBuilder.Entity("api_dong_ho.Models.NhanHieu", b =>
@@ -52,7 +52,7 @@ namespace api_dong_ho.Migrations
 
                     b.HasKey("MaNhanHieu");
 
-                    b.ToTable("NhanHieus");
+                    b.ToTable("NhanHieus", (string)null);
                 });
 
             modelBuilder.Entity("api_dong_ho.Models.SanPham", b =>
@@ -97,7 +97,7 @@ namespace api_dong_ho.Migrations
 
                     b.HasIndex("MaNhanHieu");
 
-                    b.ToTable("SanPham");
+                    b.ToTable("SanPham", (string)null);
                 });
 
             modelBuilder.Entity("api_dong_ho.Models.SanPham", b =>
