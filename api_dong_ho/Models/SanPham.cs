@@ -43,6 +43,8 @@ namespace api_dong_ho.Models
 
         [NotMapped]
         public IFormFile? HinhAnhTaiLen { get; set; }
-
+        public ICollection<MauSac>? MauSacs { get; set; }
+        public ICollection<KichThuoc>? KichThuocs { get; set; }
+        public ICollection<ChiTietDonHang>? ChiTietDonHangs { get; set; }
     }
 }

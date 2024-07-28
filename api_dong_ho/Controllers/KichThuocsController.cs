@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using api_dong_ho.Data;
 using api_dong_ho.Models;
+using api_dong_ho.Dtos;
 
 namespace api_dong_ho.Controllers
 {
@@ -32,7 +33,7 @@ namespace api_dong_ho.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<KichThuoc>> GetKichThuoc(int id)
         {
-            var kichThuoc = await _context.KichThuoc.FindAsync(id);
+            var kichThuoc = await _context.KichThuoc.FirstOrDefaultAsync(sp => sp.MaSP == id);
 
             if (kichThuoc == null)
             {
@@ -76,12 +77,21 @@ namespace api_dong_ho.Controllers
         // POST: api/KichThuocs
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<KichThuoc>> PostKichThuoc(KichThuoc kichThuoc)
+        public async Task<ActionResult<PostKT>> PostKichThuoc([FromBody]PostKT post)
         {
-            _context.KichThuoc.Add(kichThuoc);
-            await _context.SaveChangesAsync();
+            if (ModelState.IsValid)
+            {
+                var ms = new KichThuoc
+                {
+                    TenKichThuoc = post.tenKT,
+                    MaSP = post.masp
+                };
+                _context.KichThuoc.Add(ms);
+                await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetKichThuoc", new { id = kichThuoc.MaKichThuoc }, kichThuoc);
+                return CreatedAtAction("GetMauSac", new { id = ms.MaKichThuoc }, ms);
+            }
+            return Ok(GetKichThuoc());
         }
 
         // DELETE: api/KichThuocs/5
