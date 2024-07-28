@@ -14,6 +14,15 @@ builder.Services.AddDbContext<api_dong_hoContext>(options =>
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(builder =>
+    {
+        builder.WithOrigins("*")
+                   .AllowAnyMethod()
+                   .AllowAnyHeader();
+    });
+});
 
 var app = builder.Build();
 
@@ -24,19 +33,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-// Configure CORS
-app.UseCors(builder =>
-{
-    builder.AllowAnyHeader().AllowAnyOrigin().AllowAnyMethod();
-});
-
-// Serve static files from wwwroot/media
-app.UseStaticFiles(new StaticFileOptions
-{
-    FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), "wwwroot")),
-    RequestPath = "/media"
-});
-
+app.UseCors();
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
