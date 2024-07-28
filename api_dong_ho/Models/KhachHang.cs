@@ -13,7 +13,7 @@ namespace api_dong_ho.Models
         public string TenTaiKhoan { get; set; }
         public string MatKhau { get; set; }
         public string TrangThai { get; set; }
-        public string NgayTao { get; set; }
+        public DateTime NgayTao { get; set; }
         public ICollection<DonHang>? DonHangs { get; set; }
     }
 }
