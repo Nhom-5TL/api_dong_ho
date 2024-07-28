@@ -27,10 +27,12 @@ namespace api_dong_ho.Controllers
         [HttpPost]
         public IActionResult GetGioHang([FromBody] GioHangRequest request)
         {
-            var id = request.Id;
+            var id = request.maSP;
             var soLuong = request.SoLuong;
+            var maKT = request.maKT;
+            var maMS = request.maMS;
             var gioh = cart;
-            var item = gioh.SingleOrDefault(p => p.Id == id);
+            var item = gioh.SingleOrDefault(p => p.MaSP == id);
             var sanp = db.SanPham.Include(a => a.KichThuocs)
                 .Include(a => a.MauSacs).FirstOrDefaultAsync(sp => sp.MaSP == id);
 
@@ -47,13 +49,13 @@ namespace api_dong_ho.Controllers
                     // Tạo đối tượng giohang với dữ liệu từ API
                     item = new giohang
                     {
-                        Id = sanp.Result.MaSP,
-                        Tensp = sanp.Result.TenSP,
-                        Hinha = sanp.Result.HinhAnh ?? string.Empty,
-                        giaB = sanp.Result.Gia,
-                        TenKt = sanp.Result.KichThuocs?.FirstOrDefault()?.TenKichThuoc ?? string.Empty,
-                        TenMS = sanp.Result.MauSacs?.FirstOrDefault()?.TenMauSac ?? string.Empty,
-                        Soluong = soLuong
+                        MaSP = sanp.Result.MaSP,
+                        TenSP = sanp.Result.TenSP,
+                        HinhAnh = sanp.Result.HinhAnh ?? string.Empty,
+                        gia = sanp.Result.Gia,
+                        TenKT = sanp.Result.KichThuocs?.SingleOrDefault(kt => kt.MaKichThuoc == maKT)?.TenKichThuoc ?? string.Empty,
+                    TenMS = sanp.Result.MauSacs?.SingleOrDefault(kt => kt.MaMauSac == maMS)?.TenMauSac ?? string.Empty,
+                    SoLuong = soLuong
                     };
 
                     gioh.Add(item);
@@ -61,10 +63,10 @@ namespace api_dong_ho.Controllers
             }
             else
             {
-                item.Soluong += soLuong;
+                item.SoLuong += soLuong;
             }
 
-            //HttpContext.Session.Set(MySetting.GioHang_KEY, gioh);
+            HttpContext.Session.Set(MySetting.GioHang_KEY, gioh);
 
             return Ok(cart);
         }

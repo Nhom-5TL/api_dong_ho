@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using System.IO;
@@ -14,7 +14,19 @@ builder.Services.AddDbContext<api_dong_hoContext>(options =>
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddControllersWithViews();
 
+// Thêm dịch vụ Session
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromSeconds(3000);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
+
+builder.Services.AddCors(op => op.AddDefaultPolicy(policy =>
+policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()));
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -36,8 +48,10 @@ app.UseStaticFiles(new StaticFileOptions
     FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), "wwwroot")),
     RequestPath = "/media"
 });
-
+app.UseRouting();
+app.UseSession();
 app.UseHttpsRedirection();
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 app.Run();
