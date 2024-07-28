@@ -3,6 +3,7 @@ using api_dong_ho.Dtos;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using static api_dong_ho.Dtos.giohang;
 
 namespace api_dong_ho.Controllers
 {
@@ -29,8 +30,6 @@ namespace api_dong_ho.Controllers
         {
             var id = request.maSP;
             var soLuong = request.SoLuong;
-            var maKT = request.maKT;
-            var maMS = request.maMS;
             var gioh = cart;
             var item = gioh.SingleOrDefault(p => p.MaSP == id);
             var sanp = db.SanPham.Include(a => a.KichThuocs)
@@ -53,9 +52,9 @@ namespace api_dong_ho.Controllers
                         TenSP = sanp.Result.TenSP,
                         HinhAnh = sanp.Result.HinhAnh ?? string.Empty,
                         gia = sanp.Result.Gia,
-                        TenKT = sanp.Result.KichThuocs?.SingleOrDefault(kt => kt.MaKichThuoc == maKT)?.TenKichThuoc ?? string.Empty,
-                    TenMS = sanp.Result.MauSacs?.SingleOrDefault(kt => kt.MaMauSac == maMS)?.TenMauSac ?? string.Empty,
-                    SoLuong = soLuong
+                        TenKT = sanp.Result.KichThuocs.FirstOrDefault(kt => kt.MaKichThuoc == request.maKT).TenKichThuoc,
+                        TenMS = sanp.Result.MauSacs.FirstOrDefault(kt => kt.MaMauSac == request.maMS).TenMauSac,
+                        SoLuong = soLuong
                     };
 
                     gioh.Add(item);
