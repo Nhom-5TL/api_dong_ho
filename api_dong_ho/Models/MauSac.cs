@@ -11,5 +11,6 @@ namespace api_dong_ho.Models
         public int? MaSP { get; set; }
         [ForeignKey("MaSP")]
         public SanPham? SanPham { get; set; }
+        public ICollection<ChiTietDonHang>? ChiTietDonHangs { get; set; }
     }
 }

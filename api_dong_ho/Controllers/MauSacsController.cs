@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using api_dong_ho.Data;
 using api_dong_ho.Models;
+using api_dong_ho.Dtos;
 
 namespace api_dong_ho.Controllers
 {
@@ -76,12 +77,21 @@ namespace api_dong_ho.Controllers
         // POST: api/MauSacs
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<MauSac>> PostMauSac(MauSac mauSac)
+        public async Task<ActionResult<Postmausac>> PostMauSac([FromBody] Postmausac postmausac)
         {
-            _context.MauSac.Add(mauSac);
+            if (ModelState.IsValid)
+            {
+                var ms = new MauSac
+                {
+                    TenMauSac = postmausac.tenMS,
+                    MaSP = postmausac.masp
+                };
+            _context.MauSac.Add(ms);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetMauSac", new { id = mauSac.MaMauSac }, mauSac);
+            return CreatedAtAction("GetMauSac", new { id = ms.MaMauSac }, ms);
+        }
+            return Ok(GetMauSac());
         }
 
         // DELETE: api/MauSacs/5

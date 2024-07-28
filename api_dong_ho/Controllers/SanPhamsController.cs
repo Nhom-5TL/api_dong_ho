@@ -51,16 +51,36 @@ namespace api_dong_ho.Controllers
 
         // GET: api/SanPhams/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<SanPham>> GetSanPham(int id)
+        public async Task<ActionResult<SanPhamCT>> GetSanPham(int id)
         {
-            var sanPham = await _context.SanPham.FindAsync(id);
+            var sanPham = await _context.SanPham.Include( a => a.KichThuocs)
+                .Include(a => a.MauSacs).FirstOrDefaultAsync(sp => sp.MaSP == id);
 
             if (sanPham == null)
             {
                 return NotFound();
             }
 
-            return sanPham;
+            var result = new SanPhamCT
+            {
+                MaSP = sanPham.MaSP,
+                TenSP = sanPham.TenSP,
+                Anh = sanPham.HinhAnh ?? string.Empty,
+                MoTa = sanPham.MoTa ?? string.Empty,
+                gia = sanPham.Gia,
+                MauSacs = sanPham.MauSacs.Select(a => new MauSacc
+                {
+                    MaMS = a.MaMauSac,
+                    TenMS = a.TenMauSac
+                }).ToList(),
+                KichThuocs = sanPham.KichThuocs.Select(v => new KichThuocc
+                {
+                    MaKT = v.MaKichThuoc,
+                    TenKT = v.TenKichThuoc
+                }).ToList()
+            };
+
+            return Ok(result);
         }
 
         // PUT: api/SanPhams/5
@@ -129,21 +149,21 @@ namespace api_dong_ho.Controllers
 
         // POST: api/SanPhams
         [HttpPost]
-        public async Task<ActionResult<SanPham>> PostSanPham([FromForm] SanPham sanPham, IFormFile hinhanhtailen)
+        public async Task<ActionResult<SanPham>> PostSanPham([FromForm] SanPham sanPham/*, IFormFile hinhanhtailen*/)
         {
-            if (hinhanhtailen != null)
-            {
-                string uploadDir = Path.Combine(_webHostEnvironment.WebRootPath, "media/SanPham");
-                string imageName = Guid.NewGuid().ToString() + "_" + hinhanhtailen.FileName;
-                string filePath = Path.Combine(uploadDir, imageName);
+            //if (hinhanhtailen != null)
+            //{
+            //    string uploadDir = Path.Combine(_webHostEnvironment.WebRootPath, "media/SanPham");
+            //    string imageName = Guid.NewGuid().ToString() + "_" + hinhanhtailen.FileName;
+            //    string filePath = Path.Combine(uploadDir, imageName);
 
-                using (var stream = new FileStream(filePath, FileMode.Create))
-                {
-                    await hinhanhtailen.CopyToAsync(stream);
-                }
+            //    using (var stream = new FileStream(filePath, FileMode.Create))
+            //    {
+            //        await hinhanhtailen.CopyToAsync(stream);
+            //    }
 
-                sanPham.HinhAnh = imageName;
-            }
+            //    sanPham.HinhAnh = imageName;
+            //}
 
             _context.SanPham.Add(sanPham);
             await _context.SaveChangesAsync();
