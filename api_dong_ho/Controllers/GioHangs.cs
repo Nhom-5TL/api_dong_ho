@@ -63,6 +63,18 @@ namespace api_dong_ho.Controllers
             else
             {
                 item.SoLuong += soLuong;
+                var kichThuoc = sanp.Result.KichThuocs.FirstOrDefault(kt => kt.MaKichThuoc == request.maKT);
+                if (kichThuoc != null && !item.TenKT.Contains(kichThuoc.TenKichThuoc))
+                {
+                    item.TenKT = string.Join(", ", item.TenKT, kichThuoc.TenKichThuoc).Trim(new char[] { ',', ' ' });
+                }
+
+                // Cập nhật màu sắc
+                var mauSac = sanp.Result.MauSacs.FirstOrDefault(ms => ms.MaMauSac == request.maMS);
+                if (mauSac != null && !item.TenMS.Contains(mauSac.TenMauSac))
+                {
+                    item.TenMS = string.Join(", ", item.TenMS, mauSac.TenMauSac).Trim(new char[] { ',', ' ' });
+                }
             }
 
             HttpContext.Session.Set(MySetting.GioHang_KEY, gioh);
