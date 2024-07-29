@@ -5,9 +5,11 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using api_dong_ho.Data;
 using api_dong_ho.Models;
 using api_dong_ho.Dtos;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication;
+using System.Security.Claims;
 
 namespace api_dong_ho.Controllers
 {
@@ -76,7 +78,7 @@ namespace api_dong_ho.Controllers
 
         // POST: api/KhachHangs
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
+        [HttpPost("DangKy")]
         public async Task<ActionResult<KhachHang>> PostKhachHang([FromBody] DangKy dangKy)
         {
             if (ModelState.IsValid)
@@ -100,7 +102,53 @@ namespace api_dong_ho.Controllers
             return BadRequest(ModelState);
 
         }
+        [HttpPost("DangNhap")]
+        public async Task<IActionResult> DangNhap([FromBody]DangNhapModels model)
+        {
+            if (ModelState.IsValid)
+            {
+                var khh = _context.KhachHang.SingleOrDefault(kh => kh.TenTaiKhoan == model.TenDN);
+                if (khh == null)
+                {
+                    return BadRequest(new { Error = "Không có tài khoản này" });
+                }
+                else
+                {
+                    if (khh.TrangThai != "online")
+                    {
+                        return BadRequest(new { Error = "Tài khoản này đã bị khóa" });
+                    }
+                    else
+                    {
+                        if (khh.MatKhau != model.MauKhau)
+                        {
+                            return BadRequest(new { Error = "Sai mật khẩu" });
+                        }
+                        else
+                        {
+                            var claims = new List<Claim>
+                            {
+                                new Claim(ClaimTypes.Email, khh.Email),
+                                new Claim(ClaimTypes.NameIdentifier, khh.TenKh),
+                                new Claim(ClaimTypes.Name, khh.TenKh),
+                                new Claim(MySetting.CLAIM_MAKH, khh.TenTaiKhoan),
 
+                                // claim - role động
+                                new Claim(ClaimTypes.Role, "kh")
+                            };
+                            var claimIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+                            var claimPrincipal = new ClaimsPrincipal(claimIdentity);
+                            await HttpContext.SignInAsync(claimPrincipal);
+                           
+
+                        }
+                    }
+
+                }
+                return Ok(khh);
+            }
+            return Ok(GetKhachHang());
+        }
         // DELETE: api/KhachHangs/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteKhachHang(int id)

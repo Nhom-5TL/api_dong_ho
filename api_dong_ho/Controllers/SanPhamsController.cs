@@ -7,8 +7,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using api_dong_ho.Models;
-using api_dong_ho.Data;
 using api_dong_ho.Dtos;
+using Microsoft.AspNetCore.Authorization;
 
 namespace api_dong_ho.Controllers
 {
@@ -27,6 +27,7 @@ namespace api_dong_ho.Controllers
 
         // GET: api/SanPhams
         [HttpGet]
+        [Authorize]
         public async Task<ActionResult<IEnumerable<SanPham>>> GetSanPham()
         {
             return await _context.SanPham.ToListAsync();

@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using api_dong_ho.Data;
 using api_dong_ho.Models;
 using api_dong_ho.Dtos;
 

@@ -2,8 +2,13 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using System.IO;
-using api_dong_ho.Data;
 using api_dong_ho.Dtos;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using api_dong_ho.Models;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,6 +32,32 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddCors(op => op.AddDefaultPolicy(policy =>
 policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()));
+//builder.Services.AddIdentity<KhachHang, IdentityRole>()
+//    .AddEntityFrameworkStores<api_dong_hoContext>()
+//    .AddDefaultTokenProviders();
+//builder.Services.AddScoped<IAccount, Account>();
+//builder.Services.AddAuthentication(options => {
+//    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+//    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+//    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+//}).AddJwtBearer(options => {
+//    options.SaveToken = true;
+//    options.RequireHttpsMetadata = false;
+//    options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+//    {
+//        ValidateIssuer = true,
+//        ValidateAudience = true,
+//        ValidAudience = builder.Configuration["AppSettings:ValidAudience"],
+//        ValidIssuer = builder.Configuration["AppSettings:ValidIssuer"],
+//        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["AppSettings:SecretKey"]))
+//    };
+//});
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(options
+    =>
+{
+    options.LoginPath = "/KhachHang/DangNhap";
+    options.AccessDeniedPath = "/KhachHang/forbidden";
+});
 
 var app = builder.Build();
 
@@ -38,6 +69,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors();
+app.UseHttpsRedirection();
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
