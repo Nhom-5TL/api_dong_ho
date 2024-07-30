@@ -49,7 +49,7 @@ namespace api_dong_ho.Controllers
                     {
                         MaSP = sanp.Result.MaSP,
                         TenSP = sanp.Result.TenSP,
-                        HinhAnh = sanp.Result.HinhAnh ?? string.Empty,
+                        HinhAnh = sanp.Result.HinhAnhs.FirstOrDefault()?.TenHinhAnh ?? "",
                         gia = sanp.Result.Gia,
                         TenKT = sanp.Result.KichThuocs.FirstOrDefault(kt => kt.MaKichThuoc == request.maKT).TenKichThuoc,
                         TenMS = sanp.Result.MauSacs.FirstOrDefault(kt => kt.MaMauSac == request.maMS).TenMauSac,

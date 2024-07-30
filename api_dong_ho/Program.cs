@@ -39,26 +39,7 @@ builder.Services.AddSession(options =>
 });
 builder.Services.AddCors(op => op.AddDefaultPolicy(policy =>
 policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()));
-//builder.Services.AddIdentity<KhachHang, IdentityRole>()
-//    .AddEntityFrameworkStores<api_dong_hoContext>()
-//    .AddDefaultTokenProviders();
-//builder.Services.AddScoped<IAccount, Account>();
-//builder.Services.AddAuthentication(options => {
-//    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-//    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-//    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-//}).AddJwtBearer(options => {
-//    options.SaveToken = true;
-//    options.RequireHttpsMetadata = false;
-//    options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
-//    {
-//        ValidateIssuer = true,
-//        ValidateAudience = true,
-//        ValidAudience = builder.Configuration["AppSettings:ValidAudience"],
-//        ValidIssuer = builder.Configuration["AppSettings:ValidIssuer"],
-//        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["AppSettings:SecretKey"]))
-//    };
-//});
+
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(options
     =>
 {

@@ -28,8 +28,10 @@ namespace api_dong_ho.Dtos
         [Range(1, int.MaxValue, ErrorMessage = "Yêu cầu chọn thương hiệu sản phẩm")]
         public int MaNhanHieu { get; set; }
 
-        public string? HinhAnh { get; set; }
-        public IFormFile? HinhAnhTaiLen { get; set; }
+        public List<string> HinhAnhHienTai { get; set; } = new List<string>();
+        public List<IFormFile> HinhAnhMoi { get; set; } = new List<IFormFile>();
+
+
 
     }
 }
