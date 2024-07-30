@@ -29,7 +29,14 @@ builder.Services.AddCors(options =>
                    .AllowAnyHeader();
     });
 });
+builder.Services.AddDistributedMemoryCache();
 
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromSeconds(3000);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
 builder.Services.AddCors(op => op.AddDefaultPolicy(policy =>
 policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()));
 //builder.Services.AddIdentity<KhachHang, IdentityRole>()
@@ -69,6 +76,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors();
+app.UseSession();
 app.UseHttpsRedirection();
 app.UseHttpsRedirection();
 app.UseAuthentication();
