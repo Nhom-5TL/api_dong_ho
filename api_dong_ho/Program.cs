@@ -22,6 +22,14 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // Configure CORS
+builder.Services.AddDistributedMemoryCache();
+
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromSeconds(3000);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(builder =>
@@ -34,6 +42,7 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -42,6 +51,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors();
+app.UseSession();
 app.UseHttpsRedirection();
 app.UseHttpsRedirection();
 app.UseAuthentication();
