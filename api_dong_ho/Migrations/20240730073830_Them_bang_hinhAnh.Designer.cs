@@ -12,8 +12,8 @@ using api_dong_ho.Dtos;
 namespace api_dong_ho.Migrations
 {
     [DbContext(typeof(api_dong_hoContext))]
-    [Migration("20240728110531_newkichthuoc")]
-    partial class newkichthuoc
+    [Migration("20240730073830_Them_bang_hinhAnh")]
+    partial class Them_bang_hinhAnh
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -109,6 +109,28 @@ namespace api_dong_ho.Migrations
                     b.ToTable("DonHang");
                 });
 
+            modelBuilder.Entity("api_dong_ho.Models.HinhAnh", b =>
+                {
+                    b.Property<int>("MaHinhAnh")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MaHinhAnh"));
+
+                    b.Property<int>("MaSanPham")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TenHinhAnh")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("MaHinhAnh");
+
+                    b.HasIndex("MaSanPham");
+
+                    b.ToTable("HinhAnhs");
+                });
+
             modelBuilder.Entity("api_dong_ho.Models.KhachHang", b =>
                 {
                     b.Property<int>("MaKH")
@@ -129,9 +151,8 @@ namespace api_dong_ho.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("NgayTao")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<DateTime>("NgayTao")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("SDT")
                         .IsRequired()
@@ -246,9 +267,6 @@ namespace api_dong_ho.Migrations
                     b.Property<int>("HTVC")
                         .HasColumnType("int");
 
-                    b.Property<string>("HinhAnh")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<int>("MaLoai")
                         .HasColumnType("int");
 
@@ -319,6 +337,17 @@ namespace api_dong_ho.Migrations
                     b.Navigation("KhachHang");
                 });
 
+            modelBuilder.Entity("api_dong_ho.Models.HinhAnh", b =>
+                {
+                    b.HasOne("api_dong_ho.Models.SanPham", "SanPham")
+                        .WithMany("HinhAnhs")
+                        .HasForeignKey("MaSanPham")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("SanPham");
+                });
+
             modelBuilder.Entity("api_dong_ho.Models.KichThuoc", b =>
                 {
                     b.HasOne("api_dong_ho.Models.SanPham", "SanPham")
@@ -379,6 +408,8 @@ namespace api_dong_ho.Migrations
             modelBuilder.Entity("api_dong_ho.Models.SanPham", b =>
                 {
                     b.Navigation("ChiTietDonHangs");
+
+                    b.Navigation("HinhAnhs");
 
                     b.Navigation("KichThuocs");
 

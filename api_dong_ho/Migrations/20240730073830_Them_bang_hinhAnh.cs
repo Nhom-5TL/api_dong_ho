@@ -5,11 +5,15 @@
 namespace api_dong_ho.Migrations
 {
     /// <inheritdoc />
-    public partial class Them_banhHinhAnh : Migration
+    public partial class Them_bang_hinhAnh : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropColumn(
+                name: "HinhAnh",
+                table: "SanPham");
+
             migrationBuilder.CreateTable(
                 name: "HinhAnhs",
                 columns: table => new
@@ -41,6 +45,12 @@ namespace api_dong_ho.Migrations
         {
             migrationBuilder.DropTable(
                 name: "HinhAnhs");
+
+            migrationBuilder.AddColumn<string>(
+                name: "HinhAnh",
+                table: "SanPham",
+                type: "nvarchar(max)",
+                nullable: true);
         }
     }
 }

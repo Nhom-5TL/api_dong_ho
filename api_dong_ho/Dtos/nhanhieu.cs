@@ -7,7 +7,7 @@ namespace api_dong_ho.Dtos
     {
         public int MaNhanHieu { get; set; }
 
-   
+
 
         public string TenNhanHieu { get; set; } = string.Empty;
     }

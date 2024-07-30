@@ -20,8 +20,15 @@ builder.Services.AddDbContext<api_dong_hoContext>(options =>
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
-// Configure CORS
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(builder =>
+    {
+        builder.WithOrigins("*")
+                   .AllowAnyMethod()
+                   .AllowAnyHeader();
+    });
+});
 builder.Services.AddDistributedMemoryCache();
 
 builder.Services.AddSession(options =>
@@ -30,14 +37,14 @@ builder.Services.AddSession(options =>
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
 });
-builder.Services.AddCors(options =>
+builder.Services.AddCors(op => op.AddDefaultPolicy(policy =>
+policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()));
+
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(options
+    =>
 {
-    options.AddDefaultPolicy(builder =>
-    {
-        builder.WithOrigins("*")
-               .AllowAnyMethod()
-               .AllowAnyHeader();
-    });
+    options.LoginPath = "/KhachHang/DangNhap";
+    options.AccessDeniedPath = "/KhachHang/forbidden";
 });
 
 var app = builder.Build();
