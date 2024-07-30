@@ -103,7 +103,7 @@ namespace api_dong_ho.Controllers
 
         }
         [HttpPost("DangNhap")]
-        public async Task<IActionResult> DangNhap([FromBody]DangNhapModels model)
+        public async Task<IActionResult> DangNhap([FromBody] DangNhapModels model)
         {
             if (ModelState.IsValid)
             {
@@ -139,7 +139,7 @@ namespace api_dong_ho.Controllers
                             var claimIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
                             var claimPrincipal = new ClaimsPrincipal(claimIdentity);
                             await HttpContext.SignInAsync(claimPrincipal);
-                           
+
 
                         }
                     }

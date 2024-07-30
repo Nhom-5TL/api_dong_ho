@@ -14,6 +14,7 @@ namespace api_dong_ho.Controllers
     [ApiController]
     public class KichThuocsController : ControllerBase
     {
+
         private readonly api_dong_hoContext _context;
 
         public KichThuocsController(api_dong_hoContext context)

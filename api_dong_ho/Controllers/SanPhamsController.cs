@@ -54,7 +54,7 @@ namespace api_dong_ho.Controllers
         [Route("get-pro-img/{fileName}")]
         public async Task<ActionResult> GetImageName(string fileName)
         {
-            var imagePath = Path.Combine("wwwroot", "media", "SanPham", fileName); 
+            var imagePath = Path.Combine("wwwroot", "media", "SanPham", fileName);
             if (System.IO.File.Exists(imagePath))
             {
                 var imageBytes = System.IO.File.ReadAllBytes(imagePath);
@@ -70,7 +70,7 @@ namespace api_dong_ho.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<SanPhamCT>> GetSanPham(int id)
         {
-            var sanPham = await _context.SanPham.Include( a => a.KichThuocs)
+            var sanPham = await _context.SanPham.Include(a => a.KichThuocs)
                 .Include(a => a.MauSacs).FirstOrDefaultAsync(sp => sp.MaSP == id);
 
             if (sanPham == null)
@@ -82,7 +82,7 @@ namespace api_dong_ho.Controllers
             {
                 MaSP = sanPham.MaSP,
                 TenSP = sanPham.TenSP,
-            
+
                 MoTa = sanPham.MoTa ?? string.Empty,
                 gia = sanPham.Gia,
                 MauSacs = sanPham.MauSacs.Select(a => new MauSacc
