@@ -19,5 +19,6 @@ namespace api_dong_ho.Data
         public DbSet<api_dong_ho.Models.NhanHieu> NhanHieus { get; set; } = default!;
         public DbSet<api_dong_ho.Models.KichThuoc> KichThuoc { get; set; } = default!;
         public DbSet<api_dong_ho.Models.MauSac> MauSac { get; set; } = default!;
+        public DbSet<api_dong_ho.Models.HinhAnh> HinhAnhs { get; set; } = default!;
     }
 }

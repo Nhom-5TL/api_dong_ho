@@ -14,18 +14,18 @@ builder.Services.AddDbContext<api_dong_hoContext>(options =>
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+// Configure CORS
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(builder =>
     {
         builder.WithOrigins("*")
-                   .AllowAnyMethod()
-                   .AllowAnyHeader();
+               .AllowAnyMethod()
+               .AllowAnyHeader();
     });
 });
 
-builder.Services.AddCors(op => op.AddDefaultPolicy(policy =>
-policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()));
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

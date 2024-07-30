@@ -39,7 +39,7 @@ namespace api_dong_ho.Models
         [ForeignKey("MaNhanHieu")]
         public NhanHieu? NhanHieus { get; set; }
 
-        public string? HinhAnh { get; set; }
+        public ICollection<HinhAnh>? HinhAnhs { get; set; }
 
         [NotMapped]
         public IFormFile? HinhAnhTaiLen { get; set; }

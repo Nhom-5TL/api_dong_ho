@@ -26,18 +26,35 @@ namespace api_dong_ho.Controllers
         }
 
         // GET: api/SanPhams
+        // GET: api/SanPhams
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<SanPham>>> GetSanPham()
+        public async Task<ActionResult<IEnumerable<SanPhamDTO>>> GetSanPham()
         {
-            return await _context.SanPham.ToListAsync();
+            var sanPhams = await _context.SanPham
+                .Include(sp => sp.HinhAnhs)
+                .ToListAsync();
+
+            var sanPhamDTOs = sanPhams.Select(sp => new SanPhamDTO
+            {
+                MaSP = sp.MaSP,
+                TenSP = sp.TenSP,
+                Gia = sp.Gia,
+                MoTa = sp.MoTa,
+                TenHinhAnhDauTien = sp.HinhAnhs.FirstOrDefault()?.TenHinhAnh ?? ""
+            }).ToList();
+
+            return Ok(sanPhamDTOs);
         }
+
+
+
+
         // GET: api/Image/5
         [HttpGet]
         [Route("get-pro-img/{fileName}")]
         public async Task<ActionResult> GetImageName(string fileName)
         {
-            var imagePath = Path.Combine("wwwroot", "media", "SanPham", fileName); // Đường dẫn tới hình ảnh trong thư mục wwwroot
-
+            var imagePath = Path.Combine("wwwroot", "media", "SanPham", fileName); 
             if (System.IO.File.Exists(imagePath))
             {
                 var imageBytes = System.IO.File.ReadAllBytes(imagePath);
@@ -65,7 +82,7 @@ namespace api_dong_ho.Controllers
             {
                 MaSP = sanPham.MaSP,
                 TenSP = sanPham.TenSP,
-                Anh = sanPham.HinhAnh ?? string.Empty,
+            
                 MoTa = sanPham.MoTa ?? string.Empty,
                 gia = sanPham.Gia,
                 MauSacs = sanPham.MauSacs.Select(a => new MauSacc
@@ -85,9 +102,10 @@ namespace api_dong_ho.Controllers
 
         // PUT: api/SanPhams/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutSanPham(int id, [FromForm] PutSanPham putSanPham, IFormFile? hinhanhtailen)
+        public async Task<IActionResult> PutSanPham(int id, [FromForm] PutSanPham putSanPham, [FromForm] List<IFormFile> hinhanhtailen)
         {
-            var sanPham = await _context.SanPham.Include(v => v.NhanHieus).Include(v => v.Loais)
+            var sanPham = await _context.SanPham
+                .Include(sp => sp.HinhAnhs)
                 .FirstOrDefaultAsync(sp => sp.MaSP == id);
             if (sanPham == null)
             {
@@ -100,29 +118,39 @@ namespace api_dong_ho.Controllers
             sanPham.MaNhanHieu = putSanPham.MaNhanHieu;
             sanPham.MaLoai = putSanPham.MaLoai;
 
-            if (hinhanhtailen != null)
+            if (hinhanhtailen != null && hinhanhtailen.Count > 0)
             {
-                // Xóa ảnh cũ nếu có
-                if (!string.IsNullOrEmpty(sanPham.HinhAnh))
+                // Xóa các hình ảnh hiện có của sản phẩm
+                foreach (var hinhAnh in sanPham.HinhAnhs)
                 {
-                    var oldImagePath = Path.Combine(_webHostEnvironment.WebRootPath, "media/SanPham", sanPham.HinhAnh);
-                    if (System.IO.File.Exists(oldImagePath))
+                    var imagePath = Path.Combine(_webHostEnvironment.WebRootPath, "media/SanPham", hinhAnh.TenHinhAnh);
+                    if (System.IO.File.Exists(imagePath))
                     {
-                        System.IO.File.Delete(oldImagePath);
+                        System.IO.File.Delete(imagePath);
                     }
+                    _context.HinhAnhs.Remove(hinhAnh);
                 }
 
-                // Tải lên ảnh mới
-                string uploadDir = Path.Combine(_webHostEnvironment.WebRootPath, "media/SanPham");
-                string imageName = Guid.NewGuid().ToString() + "_" + hinhanhtailen.FileName;
-                string filePath = Path.Combine(uploadDir, imageName);
-
-                using (var stream = new FileStream(filePath, FileMode.Create))
+                // Thêm các hình ảnh mới
+                foreach (var hinhanhtailenItem in hinhanhtailen)
                 {
-                    await hinhanhtailen.CopyToAsync(stream);
-                }
+                    string uploadDir = Path.Combine(_webHostEnvironment.WebRootPath, "media/SanPham");
+                    string imageName = Guid.NewGuid().ToString() + "_" + hinhanhtailenItem.FileName;
+                    string filePath = Path.Combine(uploadDir, imageName);
 
-                sanPham.HinhAnh = imageName;
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await hinhanhtailenItem.CopyToAsync(stream);
+                    }
+
+                    var hinhAnh = new HinhAnh
+                    {
+                        TenHinhAnh = imageName,
+                        SanPham = sanPham
+                    };
+
+                    sanPham.HinhAnhs.Add(hinhAnh);
+                }
             }
 
             _context.Entry(sanPham).State = EntityState.Modified;
@@ -147,23 +175,41 @@ namespace api_dong_ho.Controllers
         }
 
 
+        private bool SanPhamExists(int id)
+        {
+            return _context.SanPham.Any(e => e.MaSP == id);
+        }
+
+
+
         // POST: api/SanPhams
         [HttpPost]
-        public async Task<ActionResult<SanPham>> PostSanPham([FromForm] SanPham sanPham/*, IFormFile hinhanhtailen*/)
+        public async Task<ActionResult<SanPham>> PostSanPham([FromForm] SanPham sanPham, [FromForm] List<IFormFile> hinhAnhTaiLens)
         {
-            //if (hinhanhtailen != null)
-            //{
-            //    string uploadDir = Path.Combine(_webHostEnvironment.WebRootPath, "media/SanPham");
-            //    string imageName = Guid.NewGuid().ToString() + "_" + hinhanhtailen.FileName;
-            //    string filePath = Path.Combine(uploadDir, imageName);
+            if (hinhAnhTaiLens != null && hinhAnhTaiLens.Count > 0)
+            {
+                sanPham.HinhAnhs = new List<HinhAnh>();
 
-            //    using (var stream = new FileStream(filePath, FileMode.Create))
-            //    {
-            //        await hinhanhtailen.CopyToAsync(stream);
-            //    }
+                foreach (var hinhanhtailen in hinhAnhTaiLens)
+                {
+                    string uploadDir = Path.Combine(_webHostEnvironment.WebRootPath, "media/SanPham");
+                    string imageName = Guid.NewGuid().ToString() + "_" + hinhanhtailen.FileName;
+                    string filePath = Path.Combine(uploadDir, imageName);
 
-            //    sanPham.HinhAnh = imageName;
-            //}
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await hinhanhtailen.CopyToAsync(stream);
+                    }
+
+                    var hinhAnh = new HinhAnh
+                    {
+                        TenHinhAnh = imageName,
+                        SanPham = sanPham
+                    };
+
+                    sanPham.HinhAnhs.Add(hinhAnh);
+                }
+            }
 
             _context.SanPham.Add(sanPham);
             await _context.SaveChangesAsync();
@@ -172,25 +218,28 @@ namespace api_dong_ho.Controllers
         }
 
 
-
         // DELETE: api/SanPhams/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteSanPham(int id)
         {
-            var sanPham = await _context.SanPham.FindAsync(id);
+            var sanPham = await _context.SanPham
+                .Include(sp => sp.HinhAnhs)
+                .FirstOrDefaultAsync(sp => sp.MaSP == id);
+
             if (sanPham == null)
             {
                 return NotFound();
             }
 
-
-            if (!string.IsNullOrEmpty(sanPham.HinhAnh))
+            // Xóa các hình ảnh liên quan đến sản phẩm
+            foreach (var hinhAnh in sanPham.HinhAnhs)
             {
-                var oldImagePath = Path.Combine(_webHostEnvironment.WebRootPath, "media/SanPham", sanPham.HinhAnh);
-                if (System.IO.File.Exists(oldImagePath))
+                var imagePath = Path.Combine(_webHostEnvironment.WebRootPath, "media/SanPham", hinhAnh.TenHinhAnh);
+                if (System.IO.File.Exists(imagePath))
                 {
-                    System.IO.File.Delete(oldImagePath);
+                    System.IO.File.Delete(imagePath);
                 }
+                _context.HinhAnhs.Remove(hinhAnh);
             }
 
             _context.SanPham.Remove(sanPham);
@@ -200,9 +249,7 @@ namespace api_dong_ho.Controllers
         }
 
 
-        private bool SanPhamExists(int id)
-        {
-            return _context.SanPham.Any(e => e.MaSP == id);
-        }
+
+
     }
 }
