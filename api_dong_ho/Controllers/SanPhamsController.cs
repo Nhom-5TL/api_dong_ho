@@ -49,10 +49,11 @@ namespace api_dong_ho.Controllers
 
 
 
+
         // GET: api/Image/5
         [HttpGet]
         [Route("get-pro-img/{fileName}")]
-        public async Task<ActionResult> GetImageName(string fileName)
+        public async Task<ActionResult<HinhAnhDTO>> GetImageName(string fileName)
         {
             var imagePath = Path.Combine("wwwroot", "media", "SanPham", fileName);
             if (System.IO.File.Exists(imagePath))
@@ -70,8 +71,11 @@ namespace api_dong_ho.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<SanPhamCT>> GetSanPham(int id)
         {
-            var sanPham = await _context.SanPham.Include(a => a.KichThuocs)
-                .Include(a => a.MauSacs).FirstOrDefaultAsync(sp => sp.MaSP == id);
+            var sanPham = await _context.SanPham
+                .Include(sp => sp.KichThuocs)
+                .Include(sp => sp.MauSacs)
+                .Include(sp => sp.HinhAnhs) // Bao gồm hình ảnh
+                .FirstOrDefaultAsync(sp => sp.MaSP == id);
 
             if (sanPham == null)
             {
@@ -82,7 +86,6 @@ namespace api_dong_ho.Controllers
             {
                 MaSP = sanPham.MaSP,
                 TenSP = sanPham.TenSP,
-
                 MoTa = sanPham.MoTa ?? string.Empty,
                 gia = sanPham.Gia,
                 MauSacs = sanPham.MauSacs.Select(a => new MauSacc
@@ -94,11 +97,17 @@ namespace api_dong_ho.Controllers
                 {
                     MaKT = v.MaKichThuoc,
                     TenKT = v.TenKichThuoc
-                }).ToList()
+                }).ToList(),
+                HinhAnhs = sanPham.HinhAnhs.Select(h => new HinhAnhDTO
+                {
+                    MaHinhAnh = h.MaHinhAnh,
+                    TenHinhAnh = h.TenHinhAnh
+                }).ToList() // Thêm hình ảnh vào kết quả
             };
 
             return Ok(result);
         }
+
 
         // PUT: api/SanPhams/5
         [HttpPut("{id}")]
