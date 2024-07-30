@@ -18,6 +18,7 @@ namespace api_dong_ho.Dtos
     public class MySetting
     {
         public static string GioHang_KEY = "MYCART";
+        public static string CLAIM_MAKH = "MaKh";
     }
     public class GioHangRequest
     {

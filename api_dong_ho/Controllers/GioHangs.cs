@@ -1,5 +1,4 @@
-﻿using api_dong_ho.Data;
-using api_dong_ho.Dtos;
+﻿using api_dong_ho.Dtos;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;

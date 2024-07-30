@@ -3,18 +3,21 @@ using System.ComponentModel.DataAnnotations;
 
 namespace api_dong_ho.Models
 {
-    public class KhachHang 
+    public class Application : IdentityUser
     {
-        [Key]
-        public int MaKH { get; set; }
+        [Required]
         public string TenKh { get; set; }
+        [Required]
         public string Email { get; set; }
+        [Required]
         public string SDT { get; set; }
+        [Required]
         public string CCCD { get; set; }
+        [Required]
         public string TenTaiKhoan { get; set; }
+        [Required]
         public string MatKhau { get; set; }
+        [Required]
         public string TrangThai { get; set; }
-        public DateTime NgayTao { get; set; }
-        public ICollection<DonHang>? DonHangs { get; set; }
     }
 }

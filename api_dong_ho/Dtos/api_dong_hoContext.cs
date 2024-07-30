@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using api_dong_ho.Models;
 
-namespace api_dong_ho.Data
+namespace api_dong_ho.Dtos
 {
     public class api_dong_hoContext : DbContext
     {

@@ -12,8 +12,8 @@ using api_dong_ho.Dtos;
 namespace api_dong_ho.Migrations
 {
     [DbContext(typeof(api_dong_hoContext))]
-    [Migration("20240728064056_Add-DonHang")]
-    partial class AddDonHang
+    [Migration("20240728125521_add-khachHang")]
+    partial class addkhachHang
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -129,9 +129,8 @@ namespace api_dong_ho.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("NgayTao")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<DateTime>("NgayTao")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("SDT")
                         .IsRequired()

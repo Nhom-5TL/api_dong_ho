@@ -2,7 +2,13 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using System.IO;
-using api_dong_ho.Data;
+using api_dong_ho.Dtos;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using api_dong_ho.Models;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -36,6 +42,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors();
+app.UseHttpsRedirection();
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
