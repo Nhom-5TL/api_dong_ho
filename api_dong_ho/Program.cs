@@ -37,6 +37,8 @@ builder.Services.AddSession(options =>
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
 });
+builder.Services.AddScoped<IKhachHang, TaiKhoan>();
+builder.Services.AddAutoMapper(typeof(Program));
 builder.Services.AddCors(op => op.AddDefaultPolicy(policy =>
 policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()));
 
@@ -46,7 +48,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     options.LoginPath = "/KhachHang/DangNhap";
     options.AccessDeniedPath = "/KhachHang/forbidden";
 });
-
+builder.Services.AddHttpContextAccessor();
 var app = builder.Build();
 
 

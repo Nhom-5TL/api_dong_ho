@@ -17,97 +17,80 @@ namespace api_dong_ho.Controllers
     [ApiController]
     public class KhachHangsController : ControllerBase
     {
-        private readonly api_dong_hoContext _context;
+        private readonly IKhachHang _context;
+        private readonly api_dong_hoContext db;
 
-        public KhachHangsController(api_dong_hoContext context)
+        public KhachHangsController(IKhachHang context, api_dong_hoContext _db)
         {
             _context = context;
+            db = _db;
         }
 
         // GET: api/KhachHangs
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<KhachHang>>> GetKhachHang()
+        public async Task<IActionResult> GetKhachHang()
         {
-            return await _context.KhachHang.ToListAsync();
-        }
-
-        // GET: api/KhachHangs/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<KhachHang>> GetKhachHang(int id)
-        {
-            var khachHang = await _context.KhachHang.FindAsync(id);
-
-            if (khachHang == null)
+            try
             {
-                return NotFound();
+                return Ok(await _context.GetAllKhachHang());
             }
-
-            return khachHang;
+            catch
+            {
+                return BadRequest();
+            }
         }
 
-        // PUT: api/KhachHangs/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutKhachHang(int id, KhachHang khachHang)
+        //// GET: api/KhachHangs/5
+        [HttpGet("{maKH}")]
+        public async Task<IActionResult> GetKhachHang(int maKH)
         {
-            if (id != khachHang.MaKH)
+            try
+            {
+                return Ok(await _context.GetKhachHang(maKH));
+            }
+            catch
             {
                 return BadRequest();
             }
 
-            _context.Entry(khachHang).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!KhachHangExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
         }
 
-        // POST: api/KhachHangs
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost("DangKy")]
-        public async Task<ActionResult<KhachHang>> PostKhachHang([FromBody] DangKy dangKy)
+        //// PUT: api/KhachHangs/5
+        //// To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutKhachHang(int id, DangKy dang)
         {
-            if (ModelState.IsValid)
+            if (id != dang.maKH)
             {
-                var tk = new KhachHang
-                {
-                    TenKh = dangKy.TenKH,
-                    SDT = dangKy.SDT,
-                    CCCD = dangKy.CCCD,
-                    Email = dangKy.Email,
-                    TenTaiKhoan = dangKy.TenDN,
-                    MatKhau = dangKy.MatKhau,
-                    TrangThai = "online",
-                    NgayTao = DateTime.Now,
-                };
-                _context.KhachHang.Add(tk);
-                await _context.SaveChangesAsync();
-
-                return CreatedAtAction("GetKhachHang", new { id = tk.MaKH }, tk);
+                return NotFound();
             }
-            return BadRequest(ModelState);
+            await _context.UpKhachHang(id, dang);
+            return Ok();
+        }
+
+        //// POST: api/KhachHangs
+        //// To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [HttpPost("DangKy")]
+        public async Task<IActionResult> PostKhachHang( DangKy dangKy)
+        {
+            try
+            {
+                var Id = await _context.AddKhachHang(dangKy);
+                var tk = await _context.GetKhachHang(Id);
+                return tk == null ? NotFound() : Ok(tk);
+            }
+            catch
+            {
+                return BadRequest();
+            }
 
         }
         [HttpPost("DangNhap")]
-        public async Task<IActionResult> DangNhap([FromBody]DangNhapModels model)
+        public async Task<IActionResult> DangNhap([FromBody] DangNhapModels model)
         {
             if (ModelState.IsValid)
             {
-                var khh = _context.KhachHang.SingleOrDefault(kh => kh.TenTaiKhoan == model.TenDN);
+                var khh = db.KhachHang.SingleOrDefault(kh => kh.TenTaiKhoan == model.TenDN);
                 if (khh == null)
                 {
                     return BadRequest(new { Error = "Không có tài khoản này" });
@@ -139,7 +122,7 @@ namespace api_dong_ho.Controllers
                             var claimIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
                             var claimPrincipal = new ClaimsPrincipal(claimIdentity);
                             await HttpContext.SignInAsync(claimPrincipal);
-                           
+
 
                         }
                     }
@@ -149,25 +132,17 @@ namespace api_dong_ho.Controllers
             }
             return Ok(GetKhachHang());
         }
-        // DELETE: api/KhachHangs/5
+        //// DELETE: api/KhachHangs/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteKhachHang(int id)
         {
-            var khachHang = await _context.KhachHang.FindAsync(id);
-            if (khachHang == null)
-            {
-                return NotFound();
-            }
-
-            _context.KhachHang.Remove(khachHang);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+            await _context.DeleteKhachHang(id);
+            return Ok();
         }
 
-        private bool KhachHangExists(int id)
-        {
-            return _context.KhachHang.Any(e => e.MaKH == id);
-        }
+        //private bool KhachHangExists(int id)
+        //{
+        //    return _context.KhachHang.Any(e => e.MaKH == id);
+        //}
     }
 }
