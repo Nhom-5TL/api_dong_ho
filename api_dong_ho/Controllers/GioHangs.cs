@@ -17,7 +17,7 @@ namespace api_dong_ho.Controllers
         {
             db = context;
         }
-        public List<giohang> cart => HttpContext.Session.Get<List<giohang>>(MySetting.GioHang_KEY) ?? new List<giohang>();
+        public static List<giohang> cart =  new List<giohang>();
 
         [HttpGet]
         public IActionResult GetGioHang()
