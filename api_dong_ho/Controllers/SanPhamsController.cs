@@ -50,22 +50,21 @@ namespace api_dong_ho.Controllers
 
 
 
-        // GET: api/Image/5
-        [HttpGet]
-        [Route("get-pro-img/{fileName}")]
-        public async Task<ActionResult<HinhAnhDTO>> GetImageName(string fileName)
+        [HttpGet("get-pro-img/{fileName}")]
+        public async Task<ActionResult> GetImageName(string fileName)
         {
             var imagePath = Path.Combine("wwwroot", "media", "SanPham", fileName);
             if (System.IO.File.Exists(imagePath))
             {
                 var imageBytes = System.IO.File.ReadAllBytes(imagePath);
-                return File(imageBytes, "image/jpeg"); // Trả về hình ảnh dưới dạng file stream
+                return File(imageBytes, "image/jpeg"); 
             }
             else
             {
-                return NotFound(); // Không tìm thấy hình ảnh
+                return NotFound(); 
             }
         }
+
 
         // GET: api/SanPhams/5
         [HttpGet("{id}")]
@@ -195,33 +194,42 @@ namespace api_dong_ho.Controllers
         [HttpPost]
         public async Task<ActionResult<SanPham>> PostSanPham([FromForm] SanPham sanPham, [FromForm] List<IFormFile> hinhAnhTaiLens)
         {
-            if (hinhAnhTaiLens != null && hinhAnhTaiLens.Count > 0)
-            {
-                sanPham.HinhAnhs = new List<HinhAnh>();
-
-                foreach (var hinhanhtailen in hinhAnhTaiLens)
-                {
-                    string uploadDir = Path.Combine(_webHostEnvironment.WebRootPath, "media/SanPham");
-                    string imageName = Guid.NewGuid().ToString() + "_" + hinhanhtailen.FileName;
-                    string filePath = Path.Combine(uploadDir, imageName);
-
-                    using (var stream = new FileStream(filePath, FileMode.Create))
-                    {
-                        await hinhanhtailen.CopyToAsync(stream);
-                    }
-
-                    var hinhAnh = new HinhAnh
-                    {
-                        TenHinhAnh = imageName,
-                        SanPham = sanPham
-                    };
-
-                    sanPham.HinhAnhs.Add(hinhAnh);
-                }
-            }
 
             _context.SanPham.Add(sanPham);
             await _context.SaveChangesAsync();
+           
+                
+
+                foreach (var hinhanhtailen in hinhAnhTaiLens)
+                {
+                    if (hinhanhtailen != null && hinhanhtailen.Length > 0)
+                    {
+
+
+                        string uploadDir = Path.Combine(_webHostEnvironment.WebRootPath, "media/SanPham");
+                        string imageName = Guid.NewGuid().ToString() + "_" + hinhanhtailen.FileName;
+                        string filePath = Path.Combine(uploadDir, imageName);
+
+                        using (var stream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await hinhanhtailen.CopyToAsync(stream);
+                        }
+
+                        HinhAnh hinhAnh = new HinhAnh();
+                        hinhAnh.TenHinhAnh = imageName;
+                        hinhAnh.MaSanPham = sanPham.MaSP;
+
+                        _context.HinhAnhs.Add(hinhAnh);
+                        _context.SaveChanges();
+
+                    }
+                }
+
+                await _context.SaveChangesAsync();
+
+            
+
+           
 
             return CreatedAtAction("GetSanPham", new { id = sanPham.MaSP }, sanPham);
         }
