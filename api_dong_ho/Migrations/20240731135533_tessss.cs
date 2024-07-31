@@ -5,7 +5,7 @@
 namespace api_dong_ho.Migrations
 {
     /// <inheritdoc />
-    public partial class Tao_bang_DonHangs : Migration
+    public partial class tessss : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -87,7 +87,7 @@ namespace api_dong_ho.Migrations
                 column: "MaDH",
                 principalTable: "DonHang",
                 principalColumn: "MaDH");
-            
+
             migrationBuilder.AddForeignKey(
                 name: "FK_DonHang_KhachHang_MaKh",
                 table: "DonHang",

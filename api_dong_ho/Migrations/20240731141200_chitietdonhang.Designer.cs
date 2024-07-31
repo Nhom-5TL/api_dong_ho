@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using api_dong_ho.Dtos;
 
@@ -11,9 +12,11 @@ using api_dong_ho.Dtos;
 namespace api_dong_ho.Migrations
 {
     [DbContext(typeof(api_dong_hoContext))]
-    partial class api_dong_hoContextModelSnapshot : ModelSnapshot
+    [Migration("20240731141200_chitietdonhang")]
+    partial class chitietdonhang
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -36,10 +39,10 @@ namespace api_dong_ho.Migrations
                     b.Property<int?>("MaDH")
                         .HasColumnType("int");
 
-                    b.Property<int?>("MaKichThuoc")
+                    b.Property<int>("MaKichThuoc")
                         .HasColumnType("int");
 
-                    b.Property<int?>("MaMauSac")
+                    b.Property<int>("MaMauSac")
                         .HasColumnType("int");
 
                     b.Property<int?>("MaSP")
@@ -313,11 +316,15 @@ namespace api_dong_ho.Migrations
 
                     b.HasOne("api_dong_ho.Models.KichThuoc", "KichThuoc")
                         .WithMany("ChiTietDonHangs")
-                        .HasForeignKey("MaKichThuoc");
+                        .HasForeignKey("MaKichThuoc")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("api_dong_ho.Models.MauSac", "MauSac")
                         .WithMany("ChiTietDonHangs")
-                        .HasForeignKey("MaMauSac");
+                        .HasForeignKey("MaMauSac")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("api_dong_ho.Models.SanPham", "SanPham")
                         .WithMany("ChiTietDonHangs")
