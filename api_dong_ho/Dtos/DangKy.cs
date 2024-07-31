@@ -8,6 +8,7 @@ namespace api_dong_ho.Dtos
     public class DangKy
     {
 
+        public int maKH { get; set; }
         [Display(Name = "Họ và tên")]
         [Required(ErrorMessage = "Họ và tên không được để trống")]
         [MaxLength(50, ErrorMessage = "Tối đa 50 ký tự")]

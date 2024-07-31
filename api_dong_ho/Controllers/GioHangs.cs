@@ -17,7 +17,7 @@ namespace api_dong_ho.Controllers
         {
             db = context;
         }
-        private static List<giohang> cart = new List<giohang>();
+        public List<giohang> cart => HttpContext.Session.Get<List<giohang>>(MySetting.GioHang_KEY) ?? new List<giohang>();
 
         [HttpGet]
         public IActionResult GetGioHang()
@@ -32,7 +32,7 @@ namespace api_dong_ho.Controllers
             {
                 var id = request.maSP;
                 var soLuong = request.SoLuong;
-                var gioh = HttpContext.Session.Get<List<giohang>>(MySetting.GioHang_KEY) ?? new List<giohang>();
+                var gioh = cart;
                 var item = gioh.SingleOrDefault(p => p.MaSP == id);
                 var sanp = db.SanPham
                     .Include(sp => sp.HinhAnhs)
@@ -78,12 +78,13 @@ namespace api_dong_ho.Controllers
 
                 HttpContext.Session.Set(MySetting.GioHang_KEY, gioh);
 
-                return Ok(gioh);
+                return Ok(cart);
             }
             catch (Exception ex)
             {
                 return StatusCode(500, new { error = ex.Message });
             }
         }
+
     }
 }
