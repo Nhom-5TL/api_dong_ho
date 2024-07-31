@@ -16,7 +16,7 @@ namespace api_dong_ho.Controllers
         {
             db = context;
         }
-        private static List<giohang> cart = new List<giohang>();
+        public List<giohang> cart => HttpContext.Session.Get<List<giohang>>(MySetting.GioHang_KEY) ?? new List<giohang>();
 
         [HttpGet]
         public IActionResult GetGioHang()
@@ -27,57 +27,63 @@ namespace api_dong_ho.Controllers
         [HttpPost]
         public IActionResult GetGioHang([FromBody] GioHangRequest request)
         {
-            var id = request.maSP;
-            var soLuong = request.SoLuong;
-            var gioh = cart;
-            var item = gioh.SingleOrDefault(p => p.MaSP == id);
-            var sanp = db.SanPham.FirstOrDefaultAsync(sp => sp.MaSP == id);
+            try
+            {
+                var id = request.maSP;
+                var soLuong = request.SoLuong;
+                var gioh = cart;
+                var item = gioh.SingleOrDefault(p => p.MaSP == id);
+                var sanp = db.SanPham
+                    .Include(sp => sp.HinhAnhs)
+                    .Include(sp => sp.KichThuocs)
+                    .Include(sp => sp.MauSacs)
+                    .FirstOrDefault(sp => sp.MaSP == id);
 
-            //if (item == null)
-            //{
-            //    if (sanp == null)
-            //    {
-            //        return NotFound("Sản Phẩm Không Tồn Tại.");
-            //    }
-            //    else
-            //    {
+                if (sanp == null)
+                {
+                    return NotFound("Sản Phẩm Không Tồn Tại.");
+                }
 
+                if (item == null)
+                {
+                    item = new giohang
+                    {
+                        MaSP = sanp.MaSP,
+                        TenSP = sanp.TenSP,
+                        HinhAnh = sanp.HinhAnhs?.FirstOrDefault()?.TenHinhAnh ?? "",
+                        gia = sanp.Gia,
+                        TenKT = sanp.KichThuocs?.FirstOrDefault(kt => kt.MaKichThuoc == request.maKT)?.TenKichThuoc ?? "",
+                        TenMS = sanp.MauSacs?.FirstOrDefault(ms => ms.MaMauSac == request.maMS)?.TenMauSac ?? "",
+                        SoLuong = soLuong
+                    };
 
-            //        // Tạo đối tượng giohang với dữ liệu từ API
-            //        item = new giohang
-            //        {
-            //            MaSP = sanp.Result.MaSP,
-            //            TenSP = sanp.Result.TenSP,
-            //            HinhAnh = sanp.Result.HinhAnhs.FirstOrDefault()?.TenHinhAnh ?? "",
-            //            gia = sanp.Result.Gia,
-            //            TenKT = sanp.Result.KichThuocs.FirstOrDefault(kt => kt.MaKichThuoc == request.maKT).TenKichThuoc,
-            //            TenMS = sanp.Result.MauSacs.FirstOrDefault(kt => kt.MaMauSac == request.maMS).TenMauSac,
-            //            SoLuong = soLuong
-            //        };
+                    gioh.Add(item);
+                }
+                else
+                {
+                    item.SoLuong += soLuong;
+                    var kichThuoc = sanp.KichThuocs?.FirstOrDefault(kt => kt.MaKichThuoc == request.maKT);
+                    if (kichThuoc != null && !item.TenKT.Contains(kichThuoc.TenKichThuoc))
+                    {
+                        item.TenKT = string.Join(", ", item.TenKT, kichThuoc.TenKichThuoc).Trim(new char[] { ',', ' ' });
+                    }
 
-            //        gioh.Add(item);
-            //    }
-            //}
-            //else
-            //{
-            //    item.SoLuong += soLuong;
-            //    var kichThuoc = sanp.Result.KichThuocs.FirstOrDefault(kt => kt.MaKichThuoc == request.maKT);
-            //    if (kichThuoc != null && !item.TenKT.Contains(kichThuoc.TenKichThuoc))
-            //    {
-            //        item.TenKT = string.Join(", ", item.TenKT, kichThuoc.TenKichThuoc).Trim(new char[] { ',', ' ' });
-            //    }
+                    var mauSac = sanp.MauSacs?.FirstOrDefault(ms => ms.MaMauSac == request.maMS);
+                    if (mauSac != null && !item.TenMS.Contains(mauSac.TenMauSac))
+                    {
+                        item.TenMS = string.Join(", ", item.TenMS, mauSac.TenMauSac).Trim(new char[] { ',', ' ' });
+                    }
+                }
 
-            //    // Cập nhật màu sắc
-            //    var mauSac = sanp.Result.MauSacs.FirstOrDefault(ms => ms.MaMauSac == request.maMS);
-            //    if (mauSac != null && !item.TenMS.Contains(mauSac.TenMauSac))
-            //    {
-            //        item.TenMS = string.Join(", ", item.TenMS, mauSac.TenMauSac).Trim(new char[] { ',', ' ' });
-            //    }
-            //}
+                HttpContext.Session.Set(MySetting.GioHang_KEY, gioh);
 
-            //HttpContext.Session.Set(MySetting.GioHang_KEY, gioh);
-
-            return Ok(sanp);
+                return Ok(cart);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
+            }
         }
+
     }
 }
