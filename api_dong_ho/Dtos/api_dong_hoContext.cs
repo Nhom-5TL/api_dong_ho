@@ -22,5 +22,6 @@ namespace api_dong_ho.Dtos
         public DbSet<api_dong_ho.Models.KhachHang> KhachHang { get; set; } = default!;
         public DbSet<api_dong_ho.Models.HinhAnh> HinhAnhs { get; set; } = default!;
         public DbSet<api_dong_ho.Models.DonHang> DonHangs { get; set; } = default!;
+        public DbSet<api_dong_ho.Models.ChiTietDonHang> chiTietDonHangs { get; set; } = default!;
     }
 }

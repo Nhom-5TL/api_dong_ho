@@ -12,8 +12,8 @@ using api_dong_ho.Dtos;
 namespace api_dong_ho.Migrations
 {
     [DbContext(typeof(api_dong_hoContext))]
-    [Migration("20240731071117_Tao_bang_DonHangs")]
-    partial class Tao_bang_DonHangs
+    [Migration("20240731135533_tessss")]
+    partial class tessss
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

@@ -16,10 +16,10 @@ namespace api_dong_ho.Models
         public int SoLuong { get; set; }
         public int? DonGia { get; set; }
         public string TenSP { get; set; }
-        public int MaMauSac { get; set; }
+        public int ?MaMauSac { get; set; }
         [ForeignKey("MaMauSac")]
         public MauSac? MauSac { get; set; }
-        public int MaKichThuoc { get; set; }
+        public int ?MaKichThuoc { get; set; }
         [ForeignKey("MaKichThuoc")]
         public KichThuoc? KichThuoc { get; set; }
     }
