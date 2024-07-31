@@ -13,7 +13,11 @@ namespace api_dong_ho.Models
         [ForeignKey("MaKh")]
         public virtual KhachHang? KhachHang { get; set; }
         public DateTime NgayTao { get; set; }
-        public string TrangThai { get; set; }
+        public int TrangThai { get; set; } = 0;
+        public string TrangThaiThanhToan { get; set; } = "COD";
+        public string LyDoHuy { get; set; } = "";
+        public DateTime? NgayHuy { get; set; }
+        public DateTime? NgayNhan { get; set; }
         public string DiaChi { get; set; }
         public string SDT { get; set; }
 

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using api_dong_ho.Dtos;
 
@@ -11,9 +12,11 @@ using api_dong_ho.Dtos;
 namespace api_dong_ho.Migrations
 {
     [DbContext(typeof(api_dong_hoContext))]
-    partial class api_dong_hoContextModelSnapshot : ModelSnapshot
+    [Migration("20240731063751_THem_cot_donHang")]
+    partial class THem_cot_donHang
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -24,11 +27,11 @@ namespace api_dong_ho.Migrations
 
             modelBuilder.Entity("api_dong_ho.Models.ChiTietDonHang", b =>
                 {
-                    b.Property<int>("MaCTDH")
+                    b.Property<int?>("MaCTDH")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MaCTDH"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int?>("MaCTDH"));
 
                     b.Property<int?>("DonGia")
                         .HasColumnType("int");
@@ -116,7 +119,7 @@ namespace api_dong_ho.Migrations
 
                     b.HasIndex("MaKh");
 
-                    b.ToTable("DonHangs");
+                    b.ToTable("DonHang");
                 });
 
             modelBuilder.Entity("api_dong_ho.Models.HinhAnh", b =>

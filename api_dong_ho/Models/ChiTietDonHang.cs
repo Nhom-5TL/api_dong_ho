@@ -6,7 +6,7 @@ namespace api_dong_ho.Models
     public class ChiTietDonHang
     {
         [Key]
-        public int? MaCTDH { get; set; }
+        public int MaCTDH { get; set; }
         public int? MaDH { get; set; }
         [ForeignKey("MaDH")]
         public DonHang? DonHang { get; set; }
