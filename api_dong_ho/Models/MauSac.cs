@@ -7,8 +7,8 @@ namespace api_dong_ho.Models
     {
         [Key]
         public int MaMauSac { get; set; }
-        public string TenMauSac { get; set; }
-        public int? MaSP { get; set; }
+        public string? TenMauSac { get; set; }
+        public int MaSP { get; set; }
         [ForeignKey("MaSP")]
         public SanPham? SanPham { get; set; }
         public ICollection<ChiTietDonHang>? ChiTietDonHangs { get; set; }
