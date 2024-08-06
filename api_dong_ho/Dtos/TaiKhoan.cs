@@ -1,14 +1,7 @@
 ﻿
 using api_dong_ho.Models;
 using AutoMapper;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
-using System.Web.WebPages.Html;
-using static System.Reflection.Metadata.BlobBuilder;
 
 namespace api_dong_ho.Dtos
 {

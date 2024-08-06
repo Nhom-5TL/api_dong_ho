@@ -35,7 +35,7 @@ namespace api_dong_ho.Controllers
 
             try
             {
-                if (string.IsNullOrEmpty(request.MaKH) || !int.TryParse(request.MaKH, out int maKH))
+                if (request.MaKH == null)
                 {
                     return Unauthorized(new { error = "Customer ID is not available. Please log in again." });
                 }
@@ -47,7 +47,7 @@ namespace api_dong_ho.Controllers
                     SDT = request.SDT,
                     GhiChu = request.GhiChu,
                     TrangThaiThanhToan = request.TrangThaiThanhToan,
-                    MaKh = maKH,
+                    MaKh = request.MaKH,
                     NgayTao = DateTime.Now,
                     TrangThai = 0
                 };
@@ -62,7 +62,15 @@ namespace api_dong_ho.Controllers
                     {
                         return BadRequest(new { error = $"Product ID {chiTiet.MaSP} does not exist in SanPham." });
                     }
+                    var maKichThuoc = await _context.KichThuoc
+                        .Where(s => s.TenKichThuoc == chiTiet.TenKT && s.MaSP == chiTiet.MaSP)
+                        .Select(s => s.MaKichThuoc)
+                        .FirstOrDefaultAsync();
 
+                    var maMauSac = await _context.MauSac
+                        .Where(s => s.TenMauSac == chiTiet.tenMS && s.MaSP == chiTiet.MaSP)
+                        .Select(s => s.MaMauSac)
+                        .FirstOrDefaultAsync();
                     var chiTietDonHang = new ChiTietDonHang
                     {
                         MaDH = donHang.MaDH,
@@ -70,8 +78,8 @@ namespace api_dong_ho.Controllers
                         SoLuong = chiTiet.SoLuong,
                         DonGia = chiTiet.DonGia,
                         TenSP = chiTiet.TenSP,
-                        MaMauSac = chiTiet.MaMauSac,
-                        MaKichThuoc = chiTiet.MaKichThuoc
+                        MaMauSac = maMauSac,
+                        MaKichThuoc = maKichThuoc
                     };
 
                     _context.chiTietDonHangs.Add(chiTietDonHang);

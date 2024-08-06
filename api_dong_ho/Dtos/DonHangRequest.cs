@@ -13,7 +13,7 @@ namespace api_dong_ho.Dtos
         public string SDT { get; set; }
 
         public string GhiChu { get; set; }
-        public string MaKH { get; set; }
+        public int MaKH { get; set; }
         public string TrangThaiThanhToan { get; set; }
 
         [Required]
@@ -22,8 +22,8 @@ namespace api_dong_ho.Dtos
     public class ChiTietDonHangRequest
     {
         public int MaSP { get; set; } // Ensure this is an integer
-        public int? MaMauSac { get; set; }
-        public int? MaKichThuoc { get; set; }
+        public string? TenKT { get; set; }
+        public string? tenMS { get; set; }
         public int SoLuong { get; set; }
         public int? DonGia { get; set; }
         public string TenSP { get; set; }
