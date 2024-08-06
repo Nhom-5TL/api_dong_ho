@@ -7,8 +7,8 @@ namespace api_dong_ho.Models
     {
         [Key]
         public int MaDH { get; set; }
-        public string TenKh { get; set; }
-        public string GhiChu { get; set; }
+        public string ?TenKh { get; set; }
+        public string ?GhiChu { get; set; }
         public int MaKh { get; set; }
         [ForeignKey("MaKh")]
         public virtual KhachHang? KhachHang { get; set; }
@@ -18,8 +18,8 @@ namespace api_dong_ho.Models
         public string LyDoHuy { get; set; } = "";
         public DateTime? NgayHuy { get; set; }
         public DateTime? NgayNhan { get; set; }
-        public string DiaChi { get; set; }
-        public string SDT { get; set; }
+        public string ?DiaChi { get; set; }
+        public string ?SDT { get; set; }
 
         public ICollection<ChiTietDonHang>? ChiTietDonHangs { get; set; }
     }
