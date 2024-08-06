@@ -8,10 +8,10 @@ namespace api_dong_ho.Models
         [Key]
         public int MaHinhAnh { get; set; }
 
-        public string TenHinhAnh { get; set; }
+        public string? TenHinhAnh { get; set; }
 
         public int MaSanPham { get; set; }
         [ForeignKey("MaSanPham")]
-        public SanPham SanPham { get; set; }
+        public SanPham? SanPham { get; set; }
     }
 }

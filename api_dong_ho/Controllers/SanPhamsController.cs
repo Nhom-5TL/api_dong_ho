@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using api_dong_ho.Models;
 using api_dong_ho.Dtos;
 using Microsoft.AspNetCore.Authorization;
+using Newtonsoft.Json;
 
 namespace api_dong_ho.Controllers
 {
@@ -25,8 +26,6 @@ namespace api_dong_ho.Controllers
             _webHostEnvironment = webHostEnvironment;
         }
 
-        // GET: api/SanPhams
-        // GET: api/SanPhams
         [HttpGet]
         public async Task<ActionResult<IEnumerable<SanPhamDTO>>> GetSanPham()
         {
@@ -46,10 +45,6 @@ namespace api_dong_ho.Controllers
             return Ok(sanPhamDTOs);
         }
 
-
-
-
-
         [HttpGet("get-pro-img/{fileName}")]
         public async Task<ActionResult> GetImageName(string fileName)
         {
@@ -57,23 +52,21 @@ namespace api_dong_ho.Controllers
             if (System.IO.File.Exists(imagePath))
             {
                 var imageBytes = System.IO.File.ReadAllBytes(imagePath);
-                return File(imageBytes, "image/jpeg"); 
+                return File(imageBytes, "image/jpeg");
             }
             else
             {
-                return NotFound(); 
+                return NotFound();
             }
         }
 
-
-        // GET: api/SanPhams/5
         [HttpGet("{id}")]
         public async Task<ActionResult<SanPhamCT>> GetSanPham(int id)
         {
             var sanPham = await _context.SanPham
                 .Include(sp => sp.KichThuocs)
                 .Include(sp => sp.MauSacs)
-                .Include(sp => sp.HinhAnhs) // Bao gồm hình ảnh
+                .Include(sp => sp.HinhAnhs)
                 .FirstOrDefaultAsync(sp => sp.MaSP == id);
 
             if (sanPham == null)
@@ -101,20 +94,21 @@ namespace api_dong_ho.Controllers
                 {
                     MaHinhAnh = h.MaHinhAnh,
                     TenHinhAnh = h.TenHinhAnh
-                }).ToList() // Thêm hình ảnh vào kết quả
+                }).ToList()
             };
 
             return Ok(result);
         }
 
-
-        // PUT: api/SanPhams/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutSanPham(int id, [FromForm] PutSanPham putSanPham, [FromForm] List<IFormFile> hinhanhtailen)
+        public async Task<IActionResult> PutSanPham(int id, [FromForm] PutSanPham putSanPham, [FromForm] List<IFormFile> hinhanhtailen, [FromForm] List<MauSac> mauSacs, [FromForm] List<KichThuoc> kichThuocs)
         {
             var sanPham = await _context.SanPham
                 .Include(sp => sp.HinhAnhs)
+                .Include(sp => sp.MauSacs)
+                .Include(sp => sp.KichThuocs)
                 .FirstOrDefaultAsync(sp => sp.MaSP == id);
+
             if (sanPham == null)
             {
                 return NotFound();
@@ -128,7 +122,6 @@ namespace api_dong_ho.Controllers
 
             if (hinhanhtailen != null && hinhanhtailen.Count > 0)
             {
-                // Xóa các hình ảnh hiện có của sản phẩm
                 foreach (var hinhAnh in sanPham.HinhAnhs)
                 {
                     var imagePath = Path.Combine(_webHostEnvironment.WebRootPath, "media/SanPham", hinhAnh.TenHinhAnh);
@@ -139,7 +132,6 @@ namespace api_dong_ho.Controllers
                     _context.HinhAnhs.Remove(hinhAnh);
                 }
 
-                // Thêm các hình ảnh mới
                 foreach (var hinhanhtailenItem in hinhanhtailen)
                 {
                     string uploadDir = Path.Combine(_webHostEnvironment.WebRootPath, "media/SanPham");
@@ -159,6 +151,21 @@ namespace api_dong_ho.Controllers
 
                     sanPham.HinhAnhs.Add(hinhAnh);
                 }
+            }
+
+            _context.MauSac.RemoveRange(sanPham.MauSacs);
+            _context.KichThuoc.RemoveRange(sanPham.KichThuocs);
+
+            foreach (var mauSac in mauSacs)
+            {
+                mauSac.MaSP = sanPham.MaSP;
+                _context.MauSac.Add(mauSac);
+            }
+
+            foreach (var kichThuoc in kichThuocs)
+            {
+                kichThuoc.MaSP = sanPham.MaSP;
+                _context.KichThuoc.Add(kichThuoc);
             }
 
             _context.Entry(sanPham).State = EntityState.Modified;
@@ -182,60 +189,62 @@ namespace api_dong_ho.Controllers
             return Ok(await _context.SanPham.ToListAsync());
         }
 
-
         private bool SanPhamExists(int id)
         {
             return _context.SanPham.Any(e => e.MaSP == id);
         }
 
-
-
-        // POST: api/SanPhams
         [HttpPost]
-        public async Task<ActionResult<SanPham>> PostSanPham([FromForm] SanPham sanPham, [FromForm] List<IFormFile> hinhAnhTaiLens)
+        public async Task<ActionResult<SanPham>> PostSanPham([FromForm] SanPham sanPham, [FromForm] List<IFormFile> hinhAnhTaiLens, [FromForm] string mauSacsJson, [FromForm] string kichThuocsJson)
         {
-
             _context.SanPham.Add(sanPham);
             await _context.SaveChangesAsync();
-           
-                
 
-                foreach (var hinhanhtailen in hinhAnhTaiLens)
+            foreach (var hinhanhtailen in hinhAnhTaiLens)
+            {
+                if (hinhanhtailen != null && hinhanhtailen.Length > 0)
                 {
-                    if (hinhanhtailen != null && hinhanhtailen.Length > 0)
+                    string uploadDir = Path.Combine(_webHostEnvironment.WebRootPath, "media/SanPham");
+                    string imageName = Guid.NewGuid().ToString() + "_" + hinhanhtailen.FileName;
+                    string filePath = Path.Combine(uploadDir, imageName);
+
+                    using (var stream = new FileStream(filePath, FileMode.Create))
                     {
-
-
-                        string uploadDir = Path.Combine(_webHostEnvironment.WebRootPath, "media/SanPham");
-                        string imageName = Guid.NewGuid().ToString() + "_" + hinhanhtailen.FileName;
-                        string filePath = Path.Combine(uploadDir, imageName);
-
-                        using (var stream = new FileStream(filePath, FileMode.Create))
-                        {
-                            await hinhanhtailen.CopyToAsync(stream);
-                        }
-
-                        HinhAnh hinhAnh = new HinhAnh();
-                        hinhAnh.TenHinhAnh = imageName;
-                        hinhAnh.MaSanPham = sanPham.MaSP;
-
-                        _context.HinhAnhs.Add(hinhAnh);
-                        _context.SaveChanges();
-
+                        await hinhanhtailen.CopyToAsync(stream);
                     }
+
+                    HinhAnh hinhAnh = new HinhAnh
+                    {
+                        TenHinhAnh = imageName,
+                        MaSanPham = sanPham.MaSP
+                    };
+
+                    _context.HinhAnhs.Add(hinhAnh);
                 }
+            }
 
-                await _context.SaveChangesAsync();
+            // Deserialize the JSON arrays
+            var mauSacs = JsonConvert.DeserializeObject<List<MauSac>>(mauSacsJson);
+            var kichThuocs = JsonConvert.DeserializeObject<List<KichThuoc>>(kichThuocsJson);
 
-            
+            foreach (var mauSac in mauSacs)
+            {
+                mauSac.MaSP = sanPham.MaSP;
+                _context.MauSac.Add(mauSac);
+            }
 
-           
+            foreach (var kichThuoc in kichThuocs)
+            {
+                kichThuoc.MaSP = sanPham.MaSP;
+                _context.KichThuoc.Add(kichThuoc);
+            }
+
+            await _context.SaveChangesAsync();
 
             return CreatedAtAction("GetSanPham", new { id = sanPham.MaSP }, sanPham);
         }
 
 
-        // DELETE: api/SanPhams/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteSanPham(int id)
         {
@@ -248,7 +257,6 @@ namespace api_dong_ho.Controllers
                 return NotFound();
             }
 
-            // Xóa các hình ảnh liên quan đến sản phẩm
             foreach (var hinhAnh in sanPham.HinhAnhs)
             {
                 var imagePath = Path.Combine(_webHostEnvironment.WebRootPath, "media/SanPham", hinhAnh.TenHinhAnh);
@@ -264,9 +272,5 @@ namespace api_dong_ho.Controllers
 
             return NoContent();
         }
-
-
-
-
     }
 }

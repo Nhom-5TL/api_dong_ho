@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using api_dong_ho.Dtos;
 using api_dong_ho.Models;
+using api_dong_ho.Dtos;
 
 namespace api_dong_ho.Controllers
 {
@@ -43,7 +41,6 @@ namespace api_dong_ho.Controllers
         }
 
         // PUT: api/NhanHieux/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutNhanHieu(int id, NhanHieu nhanHieu)
         {
@@ -74,7 +71,6 @@ namespace api_dong_ho.Controllers
         }
 
         // POST: api/NhanHieux
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<NhanHieu>> PostNhanHieu(NhanHieu nhanHieu)
         {
