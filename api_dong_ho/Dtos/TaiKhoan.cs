@@ -15,17 +15,13 @@ namespace api_dong_ho.Dtos
         private readonly IMapper _mapper;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
-        private readonly EmailService _emailService;
-        private readonly QRCodeService _qrCodeService;
 
-        public TaiKhoan(api_dong_hoContext context, IMapper mapper, IHttpContextAccessor httpContextAccessor,EmailService emailService, QRCodeService qrCodeService)
+        public TaiKhoan(api_dong_hoContext context, IMapper mapper, IHttpContextAccessor httpContextAccessor)
         {
             _context = context;
             _mapper = mapper;
             _httpContextAccessor = httpContextAccessor;
 
-            _emailService = emailService;
-            _qrCodeService = qrCodeService;
         }
         //public async Task DeleteExpiredAccounts()
         //{
@@ -36,14 +32,8 @@ namespace api_dong_ho.Dtos
         //    _context.KhachHang.RemoveRange(expiredAccounts);
         //    await _context.SaveChangesAsync();
         //}
-        public void DeleteExpiredAccounts()
-        {
-            DeleteExpiredAccountsAsync().GetAwaiter().GetResult();
-        }
         public async Task<int> AddKhachHang(DangKy dangKy)
         {
-            var confirmationCode = Guid.NewGuid().ToString("N").Substring(0, 6);
-            var ngayXoa = DateTime.Now.AddMinutes(1); // Tạo mã xác nhận
             var tk = new KhachHang
             {
                 TenKh = dangKy.TenKH,
@@ -53,48 +43,15 @@ namespace api_dong_ho.Dtos
                 TenTaiKhoan = dangKy.TenDN,
                 MatKhau = dangKy.MatKhau,
                 TrangThai = "online",
-                NgayTao = ngayXoa,
-                ConfirmationCode = confirmationCode, // Lưu mã xác nhận
-                IsConfirmed = false // Mặc định chưa xác nhận
+                NgayTao = DateTime.Now,
             };
             
             _context.KhachHang.Add(tk);
             await _context.SaveChangesAsync();
              // Ví dụ: 6 ký tự ngẫu nhiên
 
-            // Tạo nội dung mã QR chỉ chứa số xác nhận
-            var qrCodeContent = confirmationCode;
-            var qrCodeImage = await _qrCodeService.GenerateQRCodeAsync(qrCodeContent);
-
-            var emailBody = new StringBuilder();
-            emailBody.AppendLine("Thank you for registering!");
-            emailBody.AppendLine("Please scan the QR code below to confirm your registration:");
-            emailBody.AppendLine($"<img src='data:image/png;base64,{Convert.ToBase64String(qrCodeImage)}' alt='QR Code' />");
-
-            _emailService.SendEmail(dangKy.Email, "Registration Confirmation", emailBody.ToString(), qrCodeImage, "qrcode.png");
-
+           
             return tk.MaKH;
-        }
-
-        public async Task DeleteExpiredAccountsAsync()
-        {
-            try
-            {
-                var oneHourAgo = DateTime.Now.AddMinutes(-1);
-                var expiredAccounts = _context.KhachHang
-                    .Where(kh => kh.NgayTao < oneHourAgo && !kh.IsConfirmed);
-
-                if (expiredAccounts.Any())
-                {
-                    _context.KhachHang.RemoveRange(expiredAccounts);
-                    await _context.SaveChangesAsync();
-                }
-            }
-            catch (Exception ex)
-            {
-                // Ghi log lỗi
-                Console.WriteLine($"Error in DeleteExpiredAccounts: {ex.Message}");
-            }
         }
 
         public async Task DeleteKhachHang(int async)
