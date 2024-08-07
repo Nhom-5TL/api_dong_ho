@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using api_dong_ho.Dtos;
 
@@ -11,9 +12,11 @@ using api_dong_ho.Dtos;
 namespace api_dong_ho.Migrations
 {
     [DbContext(typeof(api_dong_hoContext))]
-    partial class api_dong_hoContextModelSnapshot : ModelSnapshot
+    [Migration("20240806070237_KKKKKKK")]
+    partial class KKKKKKK
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -74,9 +77,11 @@ namespace api_dong_ho.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MaDH"));
 
                     b.Property<string>("DiaChi")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("GhiChu")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("LyDoHuy")
@@ -96,9 +101,11 @@ namespace api_dong_ho.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("SDT")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("TenKh")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("TrangThai")
