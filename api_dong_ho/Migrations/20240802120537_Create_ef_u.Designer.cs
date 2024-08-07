@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using api_dong_ho.Dtos;
 
@@ -11,9 +12,11 @@ using api_dong_ho.Dtos;
 namespace api_dong_ho.Migrations
 {
     [DbContext(typeof(api_dong_hoContext))]
-    partial class api_dong_hoContextModelSnapshot : ModelSnapshot
+    [Migration("20240802120537_Create_ef_u")]
+    partial class Create_ef_u
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -127,6 +130,7 @@ namespace api_dong_ho.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("TenHinhAnh")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("MaHinhAnh");
@@ -188,10 +192,11 @@ namespace api_dong_ho.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MaKichThuoc"));
 
-                    b.Property<int>("MaSP")
+                    b.Property<int?>("MaSP")
                         .HasColumnType("int");
 
                     b.Property<string>("TenKichThuoc")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("MaKichThuoc");
@@ -226,10 +231,11 @@ namespace api_dong_ho.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MaMauSac"));
 
-                    b.Property<int>("MaSP")
+                    b.Property<int?>("MaSP")
                         .HasColumnType("int");
 
                     b.Property<string>("TenMauSac")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("MaMauSac");
@@ -351,9 +357,7 @@ namespace api_dong_ho.Migrations
                 {
                     b.HasOne("api_dong_ho.Models.SanPham", "SanPham")
                         .WithMany("KichThuocs")
-                        .HasForeignKey("MaSP")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("MaSP");
 
                     b.Navigation("SanPham");
                 });
@@ -362,9 +366,7 @@ namespace api_dong_ho.Migrations
                 {
                     b.HasOne("api_dong_ho.Models.SanPham", "SanPham")
                         .WithMany("MauSacs")
-                        .HasForeignKey("MaSP")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("MaSP");
 
                     b.Navigation("SanPham");
                 });
