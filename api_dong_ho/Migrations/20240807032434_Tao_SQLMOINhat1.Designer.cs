@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using api_dong_ho.Dtos;
 
@@ -11,9 +12,11 @@ using api_dong_ho.Dtos;
 namespace api_dong_ho.Migrations
 {
     [DbContext(typeof(api_dong_hoContext))]
-    partial class api_dong_hoContextModelSnapshot : ModelSnapshot
+    [Migration("20240807032434_Tao_SQLMOINhat1")]
+    partial class Tao_SQLMOINhat1
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
