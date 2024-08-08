@@ -14,6 +14,7 @@ namespace api_dong_ho.Models
         public virtual KhachHang? KhachHang { get; set; }
         public DateTime NgayTao { get; set; }
         public int TrangThai { get; set; } = 0;
+        public int TrangThaiTT { get; set; } = 0;
         public string TrangThaiThanhToan { get; set; } = "COD";
         public string LyDoHuy { get; set; } = "";
         public DateTime? NgayHuy { get; set; }

@@ -20,7 +20,7 @@ namespace api_dong_ho.Dtos
 
         [Display(Name = "Số điện thoại")]
         [Required(ErrorMessage = "Số điện thoại không được để trống")]
-        [MaxLength(10, ErrorMessage = "Tối đa 10 ký tự")]
+        [MaxLength(11, ErrorMessage = "Tối đa 11 ký tự")]
         [MinLength(9, ErrorMessage = "Ít nhất 9 ký tự")]
         [RegularExpression(@"0[983]\d{8}", ErrorMessage = "Vui lòng đúng định dạng số điện thoại (0 [983])")]
         public string SDT { get; set; }
@@ -28,13 +28,13 @@ namespace api_dong_ho.Dtos
 
         [Display(Name = "Mật khẩu")]
         [Required(ErrorMessage = "Mật khẩu không được để trống")]
-        [MaxLength(10, ErrorMessage = "Mật khẩu tối đa 10 ký tự")]
-        [MinLength(8, ErrorMessage = "Mật khẩu ít nhất là 8 ký tự")]
+        [MaxLength(20, ErrorMessage = "Mật khẩu tối đa 20 ký tự")]
+        [MinLength(6, ErrorMessage = "Mật khẩu ít nhất là 6 ký tự")]
         [DataType(DataType.Password)]
         public string MatKhau { get; set; }
 
-        [MaxLength(10, ErrorMessage = "Mật khẩu tối đa 10 ký tự")]
-        [MinLength(2, ErrorMessage = "Mật khẩu ít nhất là 8 ký tự")]
+        [MaxLength(12, ErrorMessage = "CCCD tối đa 12 ký tự")]
+        [MinLength(11, ErrorMessage = "CCCD ít nhất là 11 ký tự")]
         public string CCCD { get; set; }
         public string TenDN { get; set; }
     }
