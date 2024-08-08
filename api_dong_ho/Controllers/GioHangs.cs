@@ -100,6 +100,67 @@ namespace api_dong_ho.Controllers
                 return StatusCode(500, new { error = ex.Message });
             }
         }
+        [HttpPut("giamsl")]
+        public async Task<IActionResult> giamsl(int id)
+        {
+            var gioh = cart;
+            var item = gioh.SingleOrDefault(p => p.MaSP == id);
+            if (item.SoLuong > 1)
+            {
+                --item.SoLuong;
+            }
+            else
+            {
+                gioh.RemoveAll(p => p.MaSP == id);
+            }
+            if (gioh.Count == 0)
+            {
+                HttpContext.Session.Remove("GioHang");
+            }
+            else
+            {
+                HttpContext.Session.Set(MySetting.GioHang_KEY, gioh);
+            }
+            return Ok(GetGioHang());
+        }
+        [HttpPut("tangsl")]
+        public async Task<IActionResult> tangsl(int id)
+        {
+            var gioh = cart;
+            var item = gioh.SingleOrDefault(p => p.MaSP == id);
+            if (item.SoLuong >= 1)
+            {
+                ++item.SoLuong;
+            }
+            else
+            {
+                gioh.RemoveAll(p => p.MaSP == id);
+            }
+            if (gioh.Count == 0)
+            {
+                HttpContext.Session.Remove("GioHang");
+            }
+            else
+            {
+                HttpContext.Session.Set(MySetting.GioHang_KEY, gioh);
+            }
+            return  Ok(GetGioHang());
+        }
+        [HttpDelete("xoagh")]
+        public async Task<IActionResult> xoagh(int id)
+        {
+            var gioh = cart;
+            gioh.RemoveAll(p => p.MaSP == id);
+            if (gioh.Count == 0)
+            {
+                HttpContext.Session.Remove("GioHang");
+            }
+            else
+            {
+                HttpContext.Session.Set(MySetting.GioHang_KEY, gioh);
+            }
+            return Ok(GetGioHang());
+        }
 
     }
 }

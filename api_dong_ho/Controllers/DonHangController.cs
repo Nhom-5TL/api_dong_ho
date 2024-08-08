@@ -6,6 +6,7 @@ using api_dong_ho.Dtos;
 using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization;
 
 namespace api_dong_ho.Controllers
 {
@@ -98,9 +99,64 @@ namespace api_dong_ho.Controllers
                 return StatusCode(500, new { error = "An error occurred while saving the entity changes.", details = ex.Message });
             }
         }
+        [HttpGet("DonHUSER")]
+        public ActionResult<IEnumerable<ChiTietDonHang>> DonHUSER(int? matt, int? maKH)
+        {
+            
+            if (maKH == null)
+            {
+                return Unauthorized(new { error = "Mã khách hàng không được xác định." });
+            }
+
+            var sanphamsQuery = _context.chiTietDonHangs.AsQueryable();
+
+                if (matt.HasValue)
+                {
+                    sanphamsQuery = sanphamsQuery.Where(p => p.DonHang.TrangThai == matt.Value);
+                }
+
+                var result = sanphamsQuery
+                    .Where(p => p.DonHang.MaKh == maKH)
+                    .Select(p => new DonHanguse
+                    {
+                        Id = p.MaDH,
+                        Tensp = p.SanPham.TenSP,
+                        //Hinha = p.SanPham. ?? "",
+                        Soluong = p.SoLuong,
+                        giaB = p.DonGia ,
+                        TrangThaiThanhToan = p.DonHang.TrangThaiThanhToan,
+                        TinhTrang = p.DonHang.TrangThai,
+                        GhiChu = p.DonHang.LyDoHuy,
+                        NgayNhan = p.DonHang.NgayNhan,
+                        NgayGiao = p.DonHang.NgayTao,
+                        NgayHuy = p.DonHang.NgayHuy,
+                    })
+                    .ToList();
+
+                return Ok(result);
+            
+        }
 
         
 
 
+        [HttpPut("HuyDonHang")]
+        public async Task<IActionResult> HuyDonHang(int idDonHang)
+        {
+            // Tìm đơn hàng cần hủy trong cơ sở dữ liệu
+            var donHang = await _context.DonHangs.FindAsync(idDonHang);
+
+            if (donHang == null)
+            {
+                return NotFound("Không tìm thấy đơn hàng.");
+            }
+            donHang.TrangThai = 1;
+            donHang.NgayHuy = DateTime.Now;
+            _context.DonHangs.Update(donHang);
+            // Lưu thay đổi vào cơ sở dữ liệu
+            await _context.SaveChangesAsync();
+
+            return Ok();
+        }
     }
 }

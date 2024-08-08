@@ -44,4 +44,22 @@ namespace api_dong_ho.Dtos
             return value == null ? default(T) : JsonConvert.DeserializeObject<T>(value);
         }
     }
+    public class DonHanguse
+    {
+        public int? Id { get; set; }
+        public string Hinha { get; set; }
+        public string Tensp { get; set; }
+        public string TenKt { get; set; }
+        public int Soluong { get; set; }
+        public int? giaB { get; set; }
+        public decimal ThanhTien => (decimal)(Soluong * giaB);
+        public int TinhTrang { get; set; }
+        public decimal giamgia { get; set; }
+        public string idkh { get; set; }
+        public string TrangThaiThanhToan { get; set; }
+        public string? GhiChu { get; set; }
+        public DateTime? NgayNhan { get; set; }
+        public DateTime? NgayGiao { get; set; }
+        public DateTime? NgayHuy { get; set; }
+    }
 }
