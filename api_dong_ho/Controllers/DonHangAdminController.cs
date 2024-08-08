@@ -71,12 +71,26 @@ namespace api_dong_ho.Controllers
         
             }
               
-            else if (donHang.TrangThai == 1)
+
+               
+
+            await _context.SaveChangesAsync();
+            return Ok();
+        }
+        [HttpPut("HoanThanh/{id}")]
+        public async Task<IActionResult> HoanThanh(int id)
+        {
+            var donHang = await _context.DonHangs.FirstOrDefaultAsync(m => m.MaDH == id);
+            if (donHang == null) return NotFound();
+
+            if (donHang.TrangThai == 1)
             {
                 donHang.TrangThai = 2;
                 donHang.NgayNhan = DateTime.Now;
+
             }
-               
+
+
 
             await _context.SaveChangesAsync();
             return Ok();
