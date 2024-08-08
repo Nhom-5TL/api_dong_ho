@@ -54,6 +54,7 @@ namespace api_dong_ho.Dtos
         public int? giaB { get; set; }
         public decimal ThanhTien => (decimal)(Soluong * giaB);
         public int TinhTrang { get; set; }
+        public int TinhTrangTT { get; set; }
         public decimal giamgia { get; set; }
         public string idkh { get; set; }
         public string TrangThaiThanhToan { get; set; }

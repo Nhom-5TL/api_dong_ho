@@ -27,10 +27,13 @@ namespace api_dong_ho.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<SanPhamDTO>>> GetSanPham()
+        public async Task<ActionResult<IEnumerable<SanPhamDTO>>> GetSanPham([FromQuery] int limit = 8, [FromQuery] int lastLoadedId = 0)
         {
             var sanPhams = await _context.SanPham
                 .Include(sp => sp.HinhAnhs)
+                .Where(sp => sp.MaSP > lastLoadedId)
+                .OrderBy(sp => sp.MaSP)
+                .Take(limit)
                 .ToListAsync();
 
             var sanPhamDTOs = sanPhams.Select(sp => new SanPhamDTO
@@ -44,6 +47,7 @@ namespace api_dong_ho.Controllers
 
             return Ok(sanPhamDTOs);
         }
+
 
         [HttpGet("get-pro-img/{fileName}")]
         public async Task<ActionResult> GetImageName(string fileName)
@@ -311,7 +315,7 @@ namespace api_dong_ho.Controllers
             return NoContent();
         }
         [HttpGet("filter")]
-        public async Task<ActionResult<List<SanPhamDTO>>> GetFilteredProducts([FromQuery] FilterParams filterParams)
+        public async Task<ActionResult<List<SanPhamDTO>>> GetFilteredProducts([FromQuery] FilterParams filterParams, [FromQuery] int limit = 8, [FromQuery] int lastLoadedId = 0)
         {
             var query = _context.SanPham
                 .Include(sp => sp.HinhAnhs)
@@ -347,14 +351,19 @@ namespace api_dong_ho.Controllers
                 query = query.Where(sp => sp.Gia <= filterParams.GiaToiDa.Value);
             }
 
-            var products = await query.Select(sp => new SanPhamDTO
-            {
-                MaSP = sp.MaSP,
-                TenSP = sp.TenSP,
-                Gia = sp.Gia,
-                MoTa = sp.MoTa,
-                TenHinhAnhDauTien = sp.HinhAnhs.Any() ? sp.HinhAnhs.OrderBy(ha => ha.MaHinhAnh).FirstOrDefault().TenHinhAnh : "",
-            }).ToListAsync();
+            query = query.Where(sp => sp.MaSP > lastLoadedId).OrderBy(sp => sp.MaSP);
+
+            var products = await query
+                .Take(limit)
+                .Select(sp => new SanPhamDTO
+                {
+                    MaSP = sp.MaSP,
+                    TenSP = sp.TenSP,
+                    Gia = sp.Gia,
+                    MoTa = sp.MoTa,
+                    TenHinhAnhDauTien = sp.HinhAnhs.Any() ? sp.HinhAnhs.OrderBy(ha => ha.MaHinhAnh).FirstOrDefault().TenHinhAnh : "",
+                })
+                .ToListAsync();
 
             return Ok(products);
         }

@@ -18,11 +18,11 @@ namespace api_dong_ho.Controllers
             db = context;
         }
         public static List<giohang> cart = new List<giohang>();
-        //[HttpGet]
-        //public IActionResult GetGioHang()
-        //{
-        //    return Ok(cart);
-        //}
+        [HttpGet]
+        public IActionResult GetGioHang()
+        {
+            return Ok(cart);
+        }
         [HttpGet("MaKH/{makh}")]
         public IActionResult GetGioHang(int makh)
         {
@@ -121,7 +121,7 @@ namespace api_dong_ho.Controllers
             {
                 HttpContext.Session.Set(MySetting.GioHang_KEY, gioh);
             }
-            return Ok(GetGioHang(id));
+            return Ok(GetGioHang());
         }
         [HttpPut("tangsl")]
         public async Task<IActionResult> tangsl(int id)
@@ -144,7 +144,7 @@ namespace api_dong_ho.Controllers
             {
                 HttpContext.Session.Set(MySetting.GioHang_KEY, gioh);
             }
-            return Ok(GetGioHang(id));
+            return Ok(GetGioHang());
         }
         [HttpDelete("xoagh")]
         public async Task<IActionResult> xoagh(int id)
@@ -159,7 +159,7 @@ namespace api_dong_ho.Controllers
             {
                 HttpContext.Session.Set(MySetting.GioHang_KEY, gioh);
             }
-            return Ok(GetGioHang(id));
+            return Ok(GetGioHang());
         }
 
 

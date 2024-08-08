@@ -126,6 +126,7 @@ namespace api_dong_ho.Controllers
                         giaB = p.DonGia ,
                         TrangThaiThanhToan = p.DonHang.TrangThaiThanhToan,
                         TinhTrang = p.DonHang.TrangThai,
+                        TinhTrangTT = p.DonHang.TrangThaiTT,
                         GhiChu = p.DonHang.LyDoHuy,
                         NgayNhan = p.DonHang.NgayNhan,
                         NgayGiao = p.DonHang.NgayTao,
