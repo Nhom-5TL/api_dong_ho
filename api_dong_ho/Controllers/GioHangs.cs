@@ -121,7 +121,7 @@ namespace api_dong_ho.Controllers
             {
                 HttpContext.Session.Set(MySetting.GioHang_KEY, gioh);
             }
-            return Ok(GetGioHang());
+            return Ok(GetGioHang(id));
         }
         [HttpPut("tangsl")]
         public async Task<IActionResult> tangsl(int id)
@@ -144,13 +144,13 @@ namespace api_dong_ho.Controllers
             {
                 HttpContext.Session.Set(MySetting.GioHang_KEY, gioh);
             }
-            return  Ok(GetGioHang());
+            return Ok(GetGioHang(id));
         }
         [HttpDelete("xoagh")]
         public async Task<IActionResult> xoagh(int id)
         {
             var gioh = cart;
-            gioh.RemoveAll(p => p.MaSP == id);
+            gioh.RemoveAll(p => p.MaSP == id);  // Xóa sản phẩm khỏi giỏ hàng
             if (gioh.Count == 0)
             {
                 HttpContext.Session.Remove("GioHang");
@@ -159,8 +159,9 @@ namespace api_dong_ho.Controllers
             {
                 HttpContext.Session.Set(MySetting.GioHang_KEY, gioh);
             }
-            return Ok(GetGioHang());
+            return Ok(GetGioHang(id));
         }
+
 
     }
 }
