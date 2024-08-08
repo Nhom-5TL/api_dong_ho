@@ -167,22 +167,15 @@ namespace api_dong_ho.Controllers
                 // Thêm màu sắc mới
                 foreach (var mau in putSanPham.MauSacs)
                 {
-                    if (mau.MaMauSac == 0) // MaMauSac = 0 là màu mới
+               
+                    var mauSac = new MauSac
                     {
-                        sanPham.MauSacs.Add(new MauSac
-                        {
-                            TenMauSac = mau.TenMauSac,
-                            MaSP = sanPham.MaSP
-                        });
-                    }
-                    else
-                    {
-                        var existingMauSac = sanPham.MauSacs.FirstOrDefault(m => m.MaMauSac == mau.MaMauSac);
-                        if (existingMauSac != null)
-                        {
-                            existingMauSac.TenMauSac = mau.TenMauSac;
-                        }
-                    }
+                        TenMauSac = mau.TenMauSac,
+                        MaSP = sanPham.MaSP
+                    };
+                    sanPham.MauSacs.Add(mauSac);
+                    
+                   
                 }
             }
 
@@ -197,22 +190,14 @@ namespace api_dong_ho.Controllers
                 // Thêm kích thước mới
                 foreach (var kichThuoc in putSanPham.KichThuocs)
                 {
-                    if (kichThuoc.MaKichThuoc == 0) // MaKichThuoc = 0 là kích thước mới
+                    var kichThuoc1 = new KichThuoc
                     {
-                        sanPham.KichThuocs.Add(new KichThuoc
-                        {
-                            TenKichThuoc = kichThuoc.TenKichThuoc,
-                            MaSP = sanPham.MaSP
-                        });
-                    }
-                    else
-                    {
-                        var existingKichThuoc = sanPham.KichThuocs.FirstOrDefault(k => k.MaKichThuoc == kichThuoc.MaKichThuoc);
-                        if (existingKichThuoc != null)
-                        {
-                            existingKichThuoc.TenKichThuoc = kichThuoc.TenKichThuoc;
-                        }
-                    }
+                        TenKichThuoc = kichThuoc.TenKichThuoc,
+                        MaSP = sanPham.MaSP
+                    };
+                    sanPham.KichThuocs.Add(kichThuoc1);
+
+
                 }
             }
 
@@ -237,12 +222,11 @@ namespace api_dong_ho.Controllers
             return NoContent();
         }
 
-
-
         private bool SanPhamExists(int id)
         {
             return _context.SanPham.Any(e => e.MaSP == id);
         }
+
 
 
 
