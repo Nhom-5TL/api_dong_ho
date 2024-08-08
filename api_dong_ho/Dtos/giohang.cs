@@ -13,7 +13,9 @@ namespace api_dong_ho.Dtos
         [Range(1, 99999999, ErrorMessage = "Số lượng không được nhỏ hơn 1")]
         public int SoLuong { get; set; }
         public int? gia { get; set; }
+        public int MaKH { get; set; }
         public decimal ThanhTien { get; set; }
+
     }
     public class MySetting
     {
@@ -25,6 +27,8 @@ namespace api_dong_ho.Dtos
         public int maSP { get; set; }
         public int maKT { get; set; }
         public int maMS { get; set; }
+
+        public int maKH { get; set; }
         public int SoLuong { get; set; }
     }
     public static class SessionExtensions

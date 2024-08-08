@@ -110,41 +110,6 @@ namespace api_dong_ho.Controllers
             }
 
         }
-        [HttpGet("confirm/{confirmationCode}")]
-        public async Task<IActionResult> ConfirmRegistration(string confirmationCode)
-        {
-            var customer = await db.KhachHang
-                .FirstOrDefaultAsync(kh => kh.ConfirmationCode == confirmationCode);
-
-            if (customer == null)
-            {
-                return BadRequest(new { Message = "Invalid confirmation code." });
-            }
-
-            if (customer.IsConfirmed)
-            {
-                return BadRequest(new { Message = "Account already confirmed." });
-            }
-            if (DateTime.Now > customer.NgayTao.AddMinutes(1))
-            {
-                // Nếu mã đã hết hạn, xóa tài khoản
-                db.KhachHang.Remove(customer);
-                await db.SaveChangesAsync();
-                return BadRequest(new { Message = "Mã xác nhận đã hết hạn. Tài khoản đã bị xóa." });
-            }
-            customer.IsConfirmed = true;
-            customer.ConfirmationCode = null;
-            customer.NgayTao = DateTime.Now;// Xóa mã xác nhận sau khi xác nhận thành công
-
-            await db.SaveChangesAsync();
-
-            return Ok(new { Message = "Registration confirmed successfully!" });
-        }
-        [HttpGet("DeleteExpiredAccounts")]
-        public void DeleteExpiredAccounts()
-        {
-            _context.DeleteExpiredAccountsAsync().GetAwaiter().GetResult();
-        }
 
 
         [HttpPost("DangNhap")]
@@ -171,10 +136,6 @@ namespace api_dong_ho.Controllers
                         }
                         else
                         {
-                            if (!khh.IsConfirmed)
-                            {
-                                return BadRequest(new { Message = "Tài khoản chưa được xác nhận. Vui lòng kiểm tra email của bạn để xác nhận." });
-                            }
                             var claims = new List<Claim>
                             {
                                 new Claim(ClaimTypes.Email, khh.Email),

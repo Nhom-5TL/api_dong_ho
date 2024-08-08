@@ -101,7 +101,7 @@ namespace api_dong_ho.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutSanPham(int id, [FromForm] PutSanPham putSanPham, [FromForm] List<IFormFile> hinhanhtailen, [FromForm] List<MauSac> mauSacs, [FromForm] List<KichThuoc> kichThuocs)
+        public async Task<IActionResult> PutSanPham(int id, [FromForm] PutSanPham putSanPham)
         {
             var sanPham = await _context.SanPham
                 .Include(sp => sp.HinhAnhs)
@@ -114,15 +114,18 @@ namespace api_dong_ho.Controllers
                 return NotFound();
             }
 
+            // Update sản phẩm
             sanPham.TenSP = putSanPham.TenSP;
             sanPham.MoTa = putSanPham.MoTa;
             sanPham.Gia = putSanPham.Gia;
-            sanPham.MaNhanHieu = putSanPham.MaNhanHieu;
             sanPham.MaLoai = putSanPham.MaLoai;
+            sanPham.MaNhanHieu = putSanPham.MaNhanHieu;
 
-            if (hinhanhtailen != null && hinhanhtailen.Count > 0)
+            // Xử lý hình ảnh
+            if (putSanPham.HinhAnhMoi != null && putSanPham.HinhAnhMoi.Count > 0)
             {
-                foreach (var hinhAnh in sanPham.HinhAnhs)
+                // Xóa hình ảnh cũ
+                foreach (var hinhAnh in sanPham.HinhAnhs.ToList())
                 {
                     var imagePath = Path.Combine(_webHostEnvironment.WebRootPath, "media/SanPham", hinhAnh.TenHinhAnh);
                     if (System.IO.File.Exists(imagePath))
@@ -132,15 +135,16 @@ namespace api_dong_ho.Controllers
                     _context.HinhAnhs.Remove(hinhAnh);
                 }
 
-                foreach (var hinhanhtailenItem in hinhanhtailen)
+                // Thêm hình ảnh mới
+                foreach (var hinhanh in putSanPham.HinhAnhMoi)
                 {
                     string uploadDir = Path.Combine(_webHostEnvironment.WebRootPath, "media/SanPham");
-                    string imageName = Guid.NewGuid().ToString() + "_" + hinhanhtailenItem.FileName;
+                    string imageName = Guid.NewGuid().ToString() + "_" + hinhanh.FileName;
                     string filePath = Path.Combine(uploadDir, imageName);
 
                     using (var stream = new FileStream(filePath, FileMode.Create))
                     {
-                        await hinhanhtailenItem.CopyToAsync(stream);
+                        await hinhanh.CopyToAsync(stream);
                     }
 
                     var hinhAnh = new HinhAnh
@@ -148,24 +152,53 @@ namespace api_dong_ho.Controllers
                         TenHinhAnh = imageName,
                         SanPham = sanPham
                     };
-
                     sanPham.HinhAnhs.Add(hinhAnh);
                 }
             }
 
-            _context.MauSac.RemoveRange(sanPham.MauSacs);
-            _context.KichThuoc.RemoveRange(sanPham.KichThuocs);
-
-            foreach (var mauSac in mauSacs)
+            // Xử lý màu sắc
+            if (putSanPham.MauSacs != null)
             {
-                mauSac.MaSP = sanPham.MaSP;
-                _context.MauSac.Add(mauSac);
+                // Xóa màu sắc cũ
+                sanPham.MauSacs = sanPham.MauSacs
+                    .Where(m => !putSanPham.MauSacCanXoa.Contains(m.MaMauSac))
+                    .ToList();
+
+                // Thêm màu sắc mới
+                foreach (var mau in putSanPham.MauSacs)
+                {
+               
+                    var mauSac = new MauSac
+                    {
+                        TenMauSac = mau.TenMauSac,
+                        MaSP = sanPham.MaSP
+                    };
+                    sanPham.MauSacs.Add(mauSac);
+                    
+                   
+                }
             }
 
-            foreach (var kichThuoc in kichThuocs)
+            // Xử lý kích thước
+            if (putSanPham.KichThuocs != null)
             {
-                kichThuoc.MaSP = sanPham.MaSP;
-                _context.KichThuoc.Add(kichThuoc);
+                // Xóa kích thước cũ
+                sanPham.KichThuocs = sanPham.KichThuocs
+                    .Where(k => !putSanPham.KichThuocCanXoa.Contains(k.MaKichThuoc))
+                    .ToList();
+
+                // Thêm kích thước mới
+                foreach (var kichThuoc in putSanPham.KichThuocs)
+                {
+                    var kichThuoc1 = new KichThuoc
+                    {
+                        TenKichThuoc = kichThuoc.TenKichThuoc,
+                        MaSP = sanPham.MaSP
+                    };
+                    sanPham.KichThuocs.Add(kichThuoc1);
+
+
+                }
             }
 
             _context.Entry(sanPham).State = EntityState.Modified;
@@ -186,13 +219,18 @@ namespace api_dong_ho.Controllers
                 }
             }
 
-            return Ok(await _context.SanPham.ToListAsync());
+            return NoContent();
         }
 
         private bool SanPhamExists(int id)
         {
             return _context.SanPham.Any(e => e.MaSP == id);
         }
+
+
+
+
+
 
         [HttpPost]
         public async Task<ActionResult<SanPham>> PostSanPham([FromForm] SanPham sanPham, [FromForm] List<IFormFile> hinhAnhTaiLens, [FromForm] string mauSacsJson, [FromForm] string kichThuocsJson)
@@ -271,6 +309,54 @@ namespace api_dong_ho.Controllers
             await _context.SaveChangesAsync();
 
             return NoContent();
+        }
+        [HttpGet("filter")]
+        public async Task<ActionResult<List<SanPhamDTO>>> GetFilteredProducts([FromQuery] FilterParams filterParams)
+        {
+            var query = _context.SanPham
+                .Include(sp => sp.HinhAnhs)
+                .AsQueryable();
+
+            if (filterParams.MaLoai.HasValue)
+            {
+                query = query.Where(sp => sp.MaLoai == filterParams.MaLoai.Value);
+            }
+
+            if (filterParams.MaNhanHieu.HasValue)
+            {
+                query = query.Where(sp => sp.MaNhanHieu == filterParams.MaNhanHieu.Value);
+            }
+
+            if (filterParams.MaKichThuoc.HasValue)
+            {
+                query = query.Where(sp => sp.KichThuocs != null && sp.KichThuocs.Any(kt => kt.MaKichThuoc == filterParams.MaKichThuoc.Value));
+            }
+
+            if (filterParams.MaMauSac.HasValue)
+            {
+                query = query.Where(sp => sp.MauSacs != null && sp.MauSacs.Any(ms => ms.MaMauSac == filterParams.MaMauSac.Value));
+            }
+
+            if (filterParams.GiaToiThieu.HasValue)
+            {
+                query = query.Where(sp => sp.Gia >= filterParams.GiaToiThieu.Value);
+            }
+
+            if (filterParams.GiaToiDa.HasValue)
+            {
+                query = query.Where(sp => sp.Gia <= filterParams.GiaToiDa.Value);
+            }
+
+            var products = await query.Select(sp => new SanPhamDTO
+            {
+                MaSP = sp.MaSP,
+                TenSP = sp.TenSP,
+                Gia = sp.Gia,
+                MoTa = sp.MoTa,
+                TenHinhAnhDauTien = sp.HinhAnhs.Any() ? sp.HinhAnhs.OrderBy(ha => ha.MaHinhAnh).FirstOrDefault().TenHinhAnh : "",
+            }).ToListAsync();
+
+            return Ok(products);
         }
     }
 }

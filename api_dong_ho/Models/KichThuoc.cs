@@ -14,3 +14,4 @@ namespace api_dong_ho.Models
         public ICollection<ChiTietDonHang>? ChiTietDonHangs { get; set; }
     }
 }
+    

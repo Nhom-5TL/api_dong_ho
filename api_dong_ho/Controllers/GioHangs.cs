@@ -17,19 +17,33 @@ namespace api_dong_ho.Controllers
         {
             db = context;
         }
-        public static List<giohang> cart =  new List<giohang>();
-
-        [HttpGet]
-        public IActionResult GetGioHang()
+        public static List<giohang> cart = new List<giohang>();
+        //[HttpGet]
+        //public IActionResult GetGioHang()
+        //{
+        //    return Ok(cart);
+        //}
+        [HttpGet("MaKH/{makh}")]
+        public IActionResult GetGioHang(int makh)
         {
-            return Ok(cart);
+            // Giả sử cart là một danh sách chứa các sản phẩm với thuộc tính MaKH
+            var filteredCart = cart.Where(item => item.MaKH == makh).ToList();
+
+            if (filteredCart == null || !filteredCart.Any())
+            {
+                return NotFound("No products found for the given MaKH.");
+            }
+
+            return Ok(filteredCart);
         }
+
 
         [HttpPost]
         public IActionResult GetGioHang([FromBody] GioHangRequest request)
         {
             try
             {
+                var maKH = request.maKH;
                 var id = request.maSP;
                 var soLuong = request.SoLuong;
                 var gioh = cart;
@@ -49,6 +63,7 @@ namespace api_dong_ho.Controllers
                 {
                     item = new giohang
                     {
+                        MaKH = request.maKH,
                         MaSP = sanp.MaSP,
                         TenSP = sanp.TenSP,
                         HinhAnh = sanp.HinhAnhs?.FirstOrDefault()?.TenHinhAnh ?? "",
