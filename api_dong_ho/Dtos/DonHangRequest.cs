@@ -3,15 +3,25 @@
 namespace api_dong_ho.Dtos
 {
     public class DonHangRequest
-    {  [Required]
+    {  
+        [Required(ErrorMessage = "Họ và tên không được để trống")]
+        [MaxLength(50, ErrorMessage = "Tối đa 50 ký tự")]
+        [MinLength(5, ErrorMessage = "Ít nhất 5 ký tự")]
         public string TenKh { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Địa Chỉ không được để trống")]
+        [MaxLength(50, ErrorMessage = "Tối đa 50 ký tự")]
+        [MinLength(5, ErrorMessage = "Ít nhất 5 ký tự")]
         public string DiaChi { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Số điện thoại không được để trống")]
+        [MaxLength(11, ErrorMessage = "Tối đa 11 ký tự")]
+        [MinLength(9, ErrorMessage = "Ít nhất 9 ký tự")]
+        [RegularExpression(@"0[983]\d{8}", ErrorMessage = "Vui lòng đúng định dạng số điện thoại (0 [983])")]
         public string SDT { get; set; }
-
+        [Required(ErrorMessage = "Ghi Chú không được để trống")]
+        [MaxLength(50, ErrorMessage = "Tối đa 50 ký tự")]
+        [MinLength(5, ErrorMessage = "Ít nhất 5 ký tự")]
         public string GhiChu { get; set; }
         public int MaKH { get; set; }
         public string TrangThaiThanhToan { get; set; }
