@@ -121,7 +121,7 @@ namespace api_dong_ho.Controllers
             {
                 HttpContext.Session.Set(MySetting.GioHang_KEY, gioh);
             }
-            return Ok(GetGioHang());
+            return Ok();
         }
         [HttpPut("tangsl")]
         public async Task<IActionResult> tangsl(int id)
@@ -144,7 +144,7 @@ namespace api_dong_ho.Controllers
             {
                 HttpContext.Session.Set(MySetting.GioHang_KEY, gioh);
             }
-            return  Ok(GetGioHang());
+            return  Ok();
         }
         [HttpDelete("xoagh")]
         public async Task<IActionResult> xoagh(int id)
@@ -159,7 +159,7 @@ namespace api_dong_ho.Controllers
             {
                 HttpContext.Session.Set(MySetting.GioHang_KEY, gioh);
             }
-            return Ok(GetGioHang());
+            return Ok();
         }
 
     }

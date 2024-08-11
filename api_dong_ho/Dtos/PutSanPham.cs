@@ -35,12 +35,12 @@ public class PutSanPham
 
 public class MauSacDto
 {
-    public int MaMauSac { get; set; }
+
     public string? TenMauSac { get; set; }
 }
 
 public class KichThuocDto
 {
-    public int MaKichThuoc { get; set; }
+
     public string? TenKichThuoc { get; set; }
 }

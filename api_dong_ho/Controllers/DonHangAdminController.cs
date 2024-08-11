@@ -34,12 +34,14 @@ namespace api_dong_ho.Controllers
             var dangXuLy = donHangs.Where(dh => dh.TrangThai == 0).ToList();
             var dangGiao = donHangs.Where(dh => dh.TrangThai == 1).ToList();
             var hoanThanh = donHangs.Where(dh => dh.TrangThai == 2).ToList();
+            var donHuy = donHangs.Where(dh => dh.TrangThai == 3).ToList();
 
             return Ok(new
             {
                 DangXuLy = dangXuLy,
                 DangGiao = dangGiao,
-                HoanThanh = hoanThanh
+                HoanThanh = hoanThanh,
+                DonHuy = donHuy
             });
         }
 
@@ -86,6 +88,7 @@ namespace api_dong_ho.Controllers
             if (donHang.TrangThai == 1)
             {
                 donHang.TrangThai = 2;
+                donHang.TrangThaiTT = 1;
                 donHang.NgayNhan = DateTime.Now;
 
             }
@@ -96,19 +99,30 @@ namespace api_dong_ho.Controllers
             return Ok();
         }
 
-        // Hủy đơn hàng
+
         [HttpPut("HuyDon/{id}")]
-        public async Task<IActionResult> HuyDon(int id, [FromBody] string lyDoHuy)
+        public async Task<IActionResult> HuyDon(int id, [FromBody] HuyDonRequest request)
         {
             var donHang = await _context.DonHangs.FirstOrDefaultAsync(m => m.MaDH == id);
             if (donHang == null) return NotFound();
 
-            donHang.TrangThai = 3; 
-            donHang.LyDoHuy = lyDoHuy;
+            if (donHang.TrangThai != 0)
+            {
+                return BadRequest("Chỉ đơn hàng đang xử lý mới có thể bị hủy.");
+            }
+
+            donHang.TrangThai = 3;
+            donHang.LyDoHuy = request.LyDoHuy;
             donHang.NgayHuy = DateTime.Now;
 
             await _context.SaveChangesAsync();
             return Ok();
         }
+
+ 
+
+
+
+
     }
 }

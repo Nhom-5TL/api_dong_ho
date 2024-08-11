@@ -195,7 +195,7 @@ namespace api_dong_ho.Controllers
                         TenKichThuoc = kichThuoc.TenKichThuoc,
                         MaSP = sanPham.MaSP
                     };
-                    sanPham.KichThuocs.Add(kichThuoc1);
+                    sanPham.KichThuocs.Add(kichThuoc1); 
 
 
                 }
