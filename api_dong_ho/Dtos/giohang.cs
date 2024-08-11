@@ -47,12 +47,16 @@ namespace api_dong_ho.Dtos
     public class DonHanguse
     {
         public int? Id { get; set; }
+        public int? MaSP { get; set; }
         public string Hinha { get; set; }
         public string Tensp { get; set; }
-        public string TenKt { get; set; }
-        public int Soluong { get; set; }
-        public int? giaB { get; set; }
-        public decimal ThanhTien => (decimal)(Soluong * giaB);
+        public string TenKT { get; set; }
+        public string TenMS { get; set; }
+        public int SoLuong { get; set; }
+        public int? Gia { get; set; }
+        public string TenKh { get; set; }
+        public string diaChi { get; set; }
+        public string sdt { get; set; }
         public int TinhTrang { get; set; }
         public decimal giamgia { get; set; }
         public string idkh { get; set; }
