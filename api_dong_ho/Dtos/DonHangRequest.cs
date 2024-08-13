@@ -28,6 +28,10 @@ namespace api_dong_ho.Dtos
         public int MaKH { get; set; }
         public string TrangThaiThanhToan { get; set; }
 
+        public string? TinhThanh { get; set; }
+        public string? QuanHuyen { get; set; }
+        public string? XaPhuong { get; set; }
+
         [Required]
         public List<ChiTietDonHangRequest> ChiTietDonHangs { get; set; }
     }
