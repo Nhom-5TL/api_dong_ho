@@ -104,5 +104,53 @@ namespace api_dong_ho.Controllers
         {
             return _context.Loais.Any(e => e.MaLoai == id);
         }
+        [HttpGet("filter")]
+        public async Task<ActionResult<List<SanPhamDTO>>> GetFilteredProducts([FromQuery] FilterParams filterParams)
+        {
+            var query = _context.SanPham
+                .Include(sp => sp.HinhAnhs)
+                .AsQueryable();
+
+            if (filterParams.MaLoai.HasValue)
+            {
+                query = query.Where(sp => sp.MaLoai == filterParams.MaLoai.Value);
+            }
+
+            if (filterParams.MaNhanHieu.HasValue)
+            {
+                query = query.Where(sp => sp.MaNhanHieu == filterParams.MaNhanHieu.Value);
+            }
+
+            if (filterParams.MaKichThuoc.HasValue)
+            {
+                query = query.Where(sp => sp.KichThuocs != null && sp.KichThuocs.Any(kt => kt.MaKichThuoc == filterParams.MaKichThuoc.Value));
+            }
+
+            if (filterParams.MaMauSac.HasValue)
+            {
+                query = query.Where(sp => sp.MauSacs != null && sp.MauSacs.Any(ms => ms.MaMauSac == filterParams.MaMauSac.Value));
+            }
+
+            if (filterParams.GiaToiThieu.HasValue)
+            {
+                query = query.Where(sp => sp.Gia >= filterParams.GiaToiThieu.Value);
+            }
+
+            if (filterParams.GiaToiDa.HasValue)
+            {
+                query = query.Where(sp => sp.Gia <= filterParams.GiaToiDa.Value);
+            }
+
+            var products = await query.Select(sp => new SanPhamDTO
+            {
+                MaSP = sp.MaSP,
+                TenSP = sp.TenSP,
+                Gia = sp.Gia,
+                MoTa = sp.MoTa,
+                TenHinhAnhDauTien = sp.HinhAnhs.Any() ? sp.HinhAnhs.OrderBy(ha => ha.MaHinhAnh).FirstOrDefault().TenHinhAnh : "",
+            }).ToListAsync();
+
+            return Ok(products);
+        }
     }
 }
