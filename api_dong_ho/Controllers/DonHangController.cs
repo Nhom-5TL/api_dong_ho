@@ -8,6 +8,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Authorization;
 using System;
+using api_dong_ho.DTOs;
+using api_dong_ho.General;
 
 namespace api_dong_ho.Controllers
 {
@@ -16,10 +18,12 @@ namespace api_dong_ho.Controllers
     public class DonHangController : ControllerBase
     {
         private readonly api_dong_hoContext _context;
+        private readonly IConfiguration _configuration;
 
-        public DonHangController(api_dong_hoContext context)
+        public DonHangController(api_dong_hoContext context, IConfiguration configuration)
         {
             _context = context;
+            _configuration = configuration;
         }
 
         [HttpGet]
@@ -42,7 +46,7 @@ namespace api_dong_ho.Controllers
 
             using (var transaction = await _context.Database.BeginTransactionAsync())
             {
-               try
+                try
                 {
                     var donHang = new DonHang
                     {
@@ -55,9 +59,7 @@ namespace api_dong_ho.Controllers
                         NgayTao = DateTime.Now,
                         TrangThai = 0
                     };
-                _context.Database.BeginTransaction();
-                
-                    _context.Database.CommitTransaction();
+
                     _context.DonHangs.Add(donHang);
                     await _context.SaveChangesAsync();
 
@@ -103,7 +105,7 @@ namespace api_dong_ho.Controllers
                     await _context.SaveChangesAsync();
                     await transaction.CommitAsync();
 
-                    return Ok(donHang);
+                    return Ok(new { MaDH = donHang.MaDH });
                 }
                 catch (DbUpdateException dbEx)
                 {
@@ -120,123 +122,219 @@ namespace api_dong_ho.Controllers
         }
 
 
-        [HttpGet("DonHUSER")]
-        public ActionResult<IEnumerable<ChiTietDonHang>> DonHUSER(int? matt, int? maKH)
+
+
+
+        [HttpPost]
+        [Route("OrderPayVNPay")]
+
+        public async Task<ActionResult> OrderPayVNPay(VnpayDTOs model)
         {
+            var vnp_Url = _configuration["Vnpay:Url"];
 
-            //if (maKH == null)
-            //{
-            //    return Unauthorized(new { error = "Mã khách hàng không được xác định." });
-            //}
+            var vnp_Returnurl = _configuration["Vnpay:ReturnUrl"];
 
-            //var sanphamsQuery = _context.chiTietDonHangs.AsQueryable();
+            var vnp_TmnCode = _configuration["Vnpay:TmnCode"];
 
+            var vnp_HashSecret = _configuration["Vnpay:HashSecret"];
 
-            //if (matt.HasValue)
-            //    {
-            //        sanphamsQuery = sanphamsQuery.Where(p => p.DonHang.TrangThai == matt.Value);
-            //    }
+            var vnpay = new VnPayLibrary();
 
-            //    var result = sanphamsQuery
-            //        .Where(p => p.DonHang.MaKh == maKH && p.MaDH = DonHang.MaDH)
-            //        .Select(p => new DonHanguse
-            //        {
-            //            Id = p.MaDH,
-            //            Tensp = p.SanPham.TenSP,
-            //            //Hinha = p.SanPham. ?? "",
-            //            Soluong = p.SoLuong,
-            //            giaB = p.DonGia ,
-            //            TrangThaiThanhToan = p.DonHang.TrangThaiThanhToan,
-            //            TinhTrang = p.DonHang.TrangThai,
-            //            GhiChu = p.DonHang.LyDoHuy,
-            //            NgayNhan = p.DonHang.NgayNhan,
-            //            NgayGiao = p.DonHang.NgayTao,
-            //            NgayHuy = p.DonHang.NgayHuy,
-            //        })
-            //        .ToList();
-            var sanphamsQuery = _context.DonHangs.Include(p => p.ChiTietDonHangs).ThenInclude(p => p.SanPham).AsQueryable();
+            vnpay.AddRequestData("vnp_Version", "2.1.0");
 
+            vnpay.AddRequestData("vnp_Command", "pay");
 
-            var result = sanphamsQuery
-                .Where(p => p.MaKh == maKH )
-                .Select(p => new DonHanguse
-                {
-                    Id = p.MaDH,
-                    Tensp = p.ChiTietDonHangs.Select(ct => ct.TenSP).FirstOrDefault(), // Chọn tên sản phẩm từ ChiTietDonHangs
-                    Hinha = p.ChiTietDonHangs.Select(ct => ct.SanPham.HinhAnhs.FirstOrDefault().TenHinhAnh).FirstOrDefault() ?? "",
-                    //p.ChiTietDonHangs.Select(ct => ct.SanPham.HinhAnhs).FirstOrDefault() ?? "", // Chọn hình ảnh từ SanPham nếu có
-                    //Soluong = p.ChiTietDonHangs.Select(ct => ct.SoLuong).Sum(), // Tổng số lượng từ tất cả các ChiTietDonHangs
-                    //giaB = p.ChiTietDonHangs.Select(ct => ct.DonGia).Sum(), // Tổng giá từ tất cả các ChiTietDonHangs
-                    TenKh = p.TenKh,
-                    diaChi = p.DiaChi,
-                    sdt = p.SDT,
-                    TrangThaiThanhToan = p.TrangThaiThanhToan,
-                    TinhTrang = p.TrangThai,
-                    GhiChu = p.GhiChu,
-                    NgayNhan = p.NgayNhan,
-                    NgayGiao = p.NgayTao,
-                    NgayHuy = p.NgayHuy
-                })
-                .ToList();
-            return Ok(result);
-            
+            vnpay.AddRequestData("vnp_TmnCode", vnp_TmnCode);
+            var amount = model.Amount / 1000;
+
+            vnpay.AddRequestData("vnp_Amount", $"{(amount * 100)}000");
+
+            vnpay.AddRequestData("vnp_CreateDate", DateTime.Now.ToString("yyyyMMddHHmmss"));
+
+            vnpay.AddRequestData("vnp_CurrCode", "VND");
+
+            vnpay.AddRequestData("vnp_IpAddr", "127.0.0.1");
+
+            vnpay.AddRequestData("vnp_Locale", "vn");
+
+            var info = "Thanh toan don hang:" + model.Id;
+            vnpay.AddRequestData("vnp_OrderInfo", model.Id);
+
+            vnpay.AddRequestData("vnp_OrderType", "other");
+
+            vnpay.AddRequestData("vnp_ReturnUrl", vnp_Returnurl);
+
+            vnpay.AddRequestData("vnp_TxnRef", model.Id);
+
+            return Ok(new SingleResponse
+            {
+                code = 200,
+                message = vnpay.CreateRequestUrl(vnp_Url, vnp_HashSecret)
+            });
         }
 
-
-
-        [HttpGet("DonHUSERCT")]
-        public ActionResult<IEnumerable<ChiTietDonHang>> DonHUSERCT( int? maDH)
+        [HttpGet("vnpay-return")]
+        public async Task<IActionResult> VnPayReturn()
         {
+            var vnp_HashSecret = _configuration["Vnpay:HashSecret"];
 
-            if (maDH == null)
+            var vnpayData = HttpContext.Request.Query;
+
+            VnPayLibrary vnpay = new VnPayLibrary();
+
+            foreach (var (key, value) in vnpayData)
             {
-                return Unauthorized(new { error = "Mã khách hàng không được xác định." });
+                if (!string.IsNullOrEmpty(key) && key.StartsWith("vnp"))
+                {
+                    vnpay.AddResponseData(key, value);
+                }
             }
 
-            var sanphamsQuery = _context.chiTietDonHangs.AsQueryable();
+            string inputHash = vnpayData["vnp_SecureHash"];
 
-            var result = sanphamsQuery
-                .Where(p =>  p.MaDH == maDH)
-                .GroupBy(item => new { item.MaSP })
-                .Select(p => new DonHanguse
+            if (vnpay.ValidateSignature(inputHash, vnp_HashSecret))
+            {
+                string id = vnpayData["vnp_TxnRef"];
+
+                string? code = vnpayData["vnp_ResponseCode"];
+
+                if (code == "00")
                 {
-                    Id = p.First().DonHang.MaDH,
-                    //Tensp = p.TenSP, // Chọn tên sản phẩm từ ChiTietDonHangs
-                    //Hinha = p.SanPham.HinhAnhs.FirstOrDefault().TenHinhAnh ?? "",
-                    //p.ChiTietDonHangs.Select(ct => ct.SanPham.HinhAnhs).FirstOrDefault() ?? "", // Chọn hình ảnh từ SanPham nếu có
-                    //Soluong = p.ChiTietDonHangs.Select(ct => ct.SoLuong).Sum(), // Tổng số lượng từ tất cả các ChiTietDonHangs
-                    //giaB = p.ChiTietDonHangs.Select(ct => ct.DonGia).Sum(), // Tổng giá từ tất cả các ChiTietDonHangs
-                    TenKh = p.First().DonHang.TenKh,
-                    diaChi = p.First().DonHang.DiaChi,
-                    sdt = p.First().DonHang.SDT,
-                    TrangThaiThanhToan = p.First().DonHang.TrangThaiThanhToan,
-                    GhiChu = p.First().DonHang.GhiChu,
-                    MaSP = p.Key.MaSP,
-                    Tensp = p.First().TenSP,
-                    Hinha = p.First().SanPham.HinhAnhs.FirstOrDefault().TenHinhAnh ?? "",
-                    TenKT = string.Join(", ", p.Select(g => g.KichThuoc.TenKichThuoc).Distinct()),
-                    TenMS = string.Join(", ", p.Select(g => g.MauSac.TenMauSac).Distinct()),
-                    SoLuong = p.Sum(g => g.SoLuong),
-                    Gia = p.First().DonGia // Sử dụng DonGia từ bất kỳ chi tiết nào trong nhóm
-                })
-                .ToList();
-            //var groupedItems = sanphamsQuery
-            //       .Where(item => item.MaDH == maDH)
-            //       .GroupBy(item => new { item.MaSP })
-            //       .Select(group => new
-            //       {
-            //           MaSP = group.Key.MaSP,
-            //           TenSP = group.First().TenSP,
-            //           HinhAnh = group.First().SanPham.HinhAnhs.FirstOrDefault().TenHinhAnh ?? "",
-            //           TenKT = string.Join(", ", group.Select(g => g.KichThuoc.TenKichThuoc).Distinct()),
-            //           TenMS = string.Join(", ", group.Select(g => g.MauSac.TenMauSac).Distinct()),
-            //           SoLuong = group.Sum(g => g.SoLuong),
-            //           Gia = group.First().DonGia // Sử dụng DonGia từ bất kỳ chi tiết nào trong nhóm
-            //       })
-            //       .ToList();
-            return Ok(result);
-
+                    var dh = await _context.DonHangs.FirstOrDefaultAsync(x => x.MaDH.ToString() == id);
+                    dh.TrangThaiTT = 1;
+                    
+                    _context.DonHangs.Update(dh);
+                    if (await _context.SaveChangesAsync() > 0)
+                    {
+                        return Redirect($"http://localhost:5173/don-hang");
+                    }
+                }
+                else
+                {
+                    return Redirect("/payment-error");
+                }
+            }
+            return BadRequest("Invalid signature");
         }
+
+
+        //[HttpGet("DonHUSER")]
+        //public ActionResult<IEnumerable<ChiTietDonHang>> DonHUSER(int? matt, int? maKH)
+        //{
+
+        //    //if (maKH == null)
+        //    //{
+        //    //    return Unauthorized(new { error = "Mã khách hàng không được xác định." });
+        //    //}
+
+        //    //var sanphamsQuery = _context.chiTietDonHangs.AsQueryable();
+
+
+        //    //if (matt.HasValue)
+        //    //    {
+        //    //        sanphamsQuery = sanphamsQuery.Where(p => p.DonHang.TrangThai == matt.Value);
+        //    //    }
+
+        //    //    var result = sanphamsQuery
+        //    //        .Where(p => p.DonHang.MaKh == maKH && p.MaDH = DonHang.MaDH)
+        //    //        .Select(p => new DonHanguse
+        //    //        {
+        //    //            Id = p.MaDH,
+        //    //            Tensp = p.SanPham.TenSP,
+        //    //            //Hinha = p.SanPham. ?? "",
+        //    //            Soluong = p.SoLuong,
+        //    //            giaB = p.DonGia ,
+        //    //            TrangThaiThanhToan = p.DonHang.TrangThaiThanhToan,
+        //    //            TinhTrang = p.DonHang.TrangThai,
+        //    //            GhiChu = p.DonHang.LyDoHuy,
+        //    //            NgayNhan = p.DonHang.NgayNhan,
+        //    //            NgayGiao = p.DonHang.NgayTao,
+        //    //            NgayHuy = p.DonHang.NgayHuy,
+        //    //        })
+        //    //        .ToList();
+        //    var sanphamsQuery = _context.DonHangs.Include(p => p.ChiTietDonHangs).ThenInclude(p => p.SanPham).AsQueryable();
+
+
+        //    var result = sanphamsQuery
+        //        .Where(p => p.MaKh == maKH )
+        //        .Select(p => new DonHanguse
+        //        {
+        //            Id = p.MaDH,
+        //            Tensp = p.ChiTietDonHangs.Select(ct => ct.TenSP).FirstOrDefault(), // Chọn tên sản phẩm từ ChiTietDonHangs
+        //            Hinha = p.ChiTietDonHangs.Select(ct => ct.SanPham.HinhAnhs.FirstOrDefault().TenHinhAnh).FirstOrDefault() ?? "",
+        //            //p.ChiTietDonHangs.Select(ct => ct.SanPham.HinhAnhs).FirstOrDefault() ?? "", // Chọn hình ảnh từ SanPham nếu có
+        //            //Soluong = p.ChiTietDonHangs.Select(ct => ct.SoLuong).Sum(), // Tổng số lượng từ tất cả các ChiTietDonHangs
+        //            //giaB = p.ChiTietDonHangs.Select(ct => ct.DonGia).Sum(), // Tổng giá từ tất cả các ChiTietDonHangs
+        //            TenKh = p.TenKh,
+        //            diaChi = p.DiaChi,
+        //            sdt = p.SDT,
+        //            TrangThaiThanhToan = p.TrangThaiThanhToan,
+        //            TinhTrang = p.TrangThai,
+        //            GhiChu = p.GhiChu,
+        //            NgayNhan = p.NgayNhan,
+        //            NgayGiao = p.NgayTao,
+        //            NgayHuy = p.NgayHuy
+        //        })
+        //        .ToList();
+        //    return Ok(result);
+
+        //}
+
+
+
+        //[HttpGet("DonHUSERCT")]
+        //public ActionResult<IEnumerable<ChiTietDonHang>> DonHUSERCT( int? maDH)
+        //{
+
+        //    if (maDH == null)
+        //    {
+        //        return Unauthorized(new { error = "Mã khách hàng không được xác định." });
+        //    }
+
+        //    var sanphamsQuery = _context.chiTietDonHangs.AsQueryable();
+
+        //    var result = sanphamsQuery
+        //        .Where(p =>  p.MaDH == maDH)
+        //        .GroupBy(item => new { item.MaSP })
+        //        .Select(p => new DonHanguse
+        //        {
+        //            Id = p.First().DonHang.MaDH,
+        //            //Tensp = p.TenSP, // Chọn tên sản phẩm từ ChiTietDonHangs
+        //            //Hinha = p.SanPham.HinhAnhs.FirstOrDefault().TenHinhAnh ?? "",
+        //            //p.ChiTietDonHangs.Select(ct => ct.SanPham.HinhAnhs).FirstOrDefault() ?? "", // Chọn hình ảnh từ SanPham nếu có
+        //            //Soluong = p.ChiTietDonHangs.Select(ct => ct.SoLuong).Sum(), // Tổng số lượng từ tất cả các ChiTietDonHangs
+        //            //giaB = p.ChiTietDonHangs.Select(ct => ct.DonGia).Sum(), // Tổng giá từ tất cả các ChiTietDonHangs
+        //            TenKh = p.First().DonHang.TenKh,
+        //            diaChi = p.First().DonHang.DiaChi,
+        //            sdt = p.First().DonHang.SDT,
+        //            TrangThaiThanhToan = p.First().DonHang.TrangThaiThanhToan,
+        //            GhiChu = p.First().DonHang.GhiChu,
+        //            MaSP = p.Key.MaSP,
+        //            Tensp = p.First().TenSP,
+        //            Hinha = p.First().SanPham.HinhAnhs.FirstOrDefault().TenHinhAnh ?? "",
+        //            TenKT = string.Join(", ", p.Select(g => g.KichThuoc.TenKichThuoc).Distinct()),
+        //            TenMS = string.Join(", ", p.Select(g => g.MauSac.TenMauSac).Distinct()),
+        //            SoLuong = p.Sum(g => g.SoLuong),
+        //            Gia = p.First().DonGia // Sử dụng DonGia từ bất kỳ chi tiết nào trong nhóm
+        //        })
+        //        .ToList();
+        //    //var groupedItems = sanphamsQuery
+        //    //       .Where(item => item.MaDH == maDH)
+        //    //       .GroupBy(item => new { item.MaSP })
+        //    //       .Select(group => new
+        //    //       {
+        //    //           MaSP = group.Key.MaSP,
+        //    //           TenSP = group.First().TenSP,
+        //    //           HinhAnh = group.First().SanPham.HinhAnhs.FirstOrDefault().TenHinhAnh ?? "",
+        //    //           TenKT = string.Join(", ", group.Select(g => g.KichThuoc.TenKichThuoc).Distinct()),
+        //    //           TenMS = string.Join(", ", group.Select(g => g.MauSac.TenMauSac).Distinct()),
+        //    //           SoLuong = group.Sum(g => g.SoLuong),
+        //    //           Gia = group.First().DonGia // Sử dụng DonGia từ bất kỳ chi tiết nào trong nhóm
+        //    //       })
+        //    //       .ToList();
+        //    return Ok(result);
+
+        //}
 
         [HttpPut("HuyDonHang")]
         public async Task<IActionResult> HuyDonHang(int idDonHang)

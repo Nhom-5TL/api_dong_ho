@@ -218,7 +218,8 @@ namespace api_dong_ho.Controllers
                     TrangThaiThanhToan = request.TrangThaiThanhToan,
                     MaKh = request.MaKH,
                     NgayTao = DateTime.Now,
-                    TrangThai = 0
+                    TrangThai = 0,
+                    TongTien = 0,
                 };
                 try
                 {
@@ -262,6 +263,8 @@ namespace api_dong_ho.Controllers
                         };
 
                         db.chiTietDonHangs.Add(chiTietDonHang);
+
+                        donHang.TongTien += chiTietDonHang.SoLuong * chiTietDonHang.DonGia ?? 0;
                     }
 
                     await db.SaveChangesAsync();

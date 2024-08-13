@@ -27,10 +27,21 @@ namespace api_dong_ho.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<SanPhamDTO>>> GetSanPham()
+        public async Task<ActionResult<IEnumerable<SanPhamDTO>>> GetSanPham([FromQuery] int limit = 8, [FromQuery] int? lastLoadedId = null)
         {
-            var sanPhams = await _context.SanPham
+            var query = _context.SanPham
                 .Include(sp => sp.HinhAnhs)
+                .AsQueryable();
+
+            // Nếu lastLoadedId được cung cấp, chỉ lấy sản phẩm có mã lớn hơn
+            if (lastLoadedId.HasValue)
+            {
+                query = query.Where(sp => sp.MaSP > lastLoadedId.Value);
+            }
+
+            var sanPhams = await query
+                .OrderBy(sp => sp.MaSP)
+                .Take(limit)
                 .ToListAsync();
 
             var sanPhamDTOs = sanPhams.Select(sp => new SanPhamDTO
@@ -44,6 +55,7 @@ namespace api_dong_ho.Controllers
 
             return Ok(sanPhamDTOs);
         }
+
 
         [HttpGet("get-pro-img/{fileName}")]
         public async Task<ActionResult> GetImageName(string fileName)
@@ -347,6 +359,11 @@ namespace api_dong_ho.Controllers
                 query = query.Where(sp => sp.Gia <= filterParams.GiaToiDa.Value);
             }
 
+            if (filterParams.LastLoadedId.HasValue)
+            {
+                query = query.Where(sp => sp.MaSP > filterParams.LastLoadedId.Value);
+            }
+
             var products = await query.Select(sp => new SanPhamDTO
             {
                 MaSP = sp.MaSP,
@@ -354,9 +371,13 @@ namespace api_dong_ho.Controllers
                 Gia = sp.Gia,
                 MoTa = sp.MoTa,
                 TenHinhAnhDauTien = sp.HinhAnhs.Any() ? sp.HinhAnhs.OrderBy(ha => ha.MaHinhAnh).FirstOrDefault().TenHinhAnh : "",
-            }).ToListAsync();
+            })
+            .OrderBy(sp => sp.MaSP)
+            .Take(8)
+            .ToListAsync();
 
             return Ok(products);
         }
+
     }
 }
