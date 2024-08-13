@@ -52,6 +52,9 @@ namespace api_dong_ho.Dtos
         public string Tensp { get; set; }
         public string TenKT { get; set; }
         public string TenMS { get; set; }
+        public string tinhThanh { get; set; }
+        public string quanHuyen { get; set; }
+        public string xaPhuong { get; set; }
         public int SoLuong { get; set; }
         public int? Gia { get; set; }
         public string TenKh { get; set; }

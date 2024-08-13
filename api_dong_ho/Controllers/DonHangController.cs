@@ -219,7 +219,7 @@ namespace api_dong_ho.Controllers
 
 
         [HttpGet("DonHUSER")]
-        public ActionResult<IEnumerable<ChiTietDonHang>> DonHUSER(int? matt, int? maKH)
+        public ActionResult<IEnumerable<ChiTietDonHang>> DonHUSER(int? matt, int? maKH, int pageNumber = 1, int pageSize = 10)
         {
 
             //if (maKH == null)
@@ -254,9 +254,11 @@ namespace api_dong_ho.Controllers
             //        .ToList();
             var sanphamsQuery = _context.DonHangs.Include(p => p.ChiTietDonHangs).ThenInclude(p => p.SanPham).AsQueryable();
 
-
+            var totalRecords = sanphamsQuery.Count();
             var result = sanphamsQuery
                 .Where(p => p.MaKh == maKH)
+                .Skip((pageNumber - 1) * pageSize)
+        .Take(pageSize)
                 .Select(p => new DonHanguse
                 {
                     Id = p.MaDH,
@@ -273,10 +275,19 @@ namespace api_dong_ho.Controllers
                     GhiChu = p.GhiChu,
                     NgayNhan = p.NgayNhan,
                     NgayGiao = p.NgayTao,
-                    NgayHuy = p.NgayHuy
+                    NgayHuy = p.NgayHuy,
+                    xaPhuong = p.XaPhuong,
+                    tinhThanh = p.TinhThanh,
+                    quanHuyen = p.QuanHuyen
                 })
                 .ToList();
-            return Ok(result);
+            return Ok(new
+            {
+                TotalRecords = totalRecords,
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                Data = result
+            });
 
         }
 
@@ -316,6 +327,9 @@ namespace api_dong_ho.Controllers
                     TenMS = string.Join(", ", p.Select(g => g.MauSac.TenMauSac).Distinct()),
                     SoLuong = p.Sum(g => g.SoLuong),
                     NgayGiao = p.FirstOrDefault().DonHang.NgayTao,
+                    xaPhuong = p.First().DonHang.XaPhuong,
+                    tinhThanh = p.First().DonHang.TinhThanh,
+                    quanHuyen = p.First().DonHang.QuanHuyen,
                     Gia = p.First().DonGia // Sử dụng DonGia từ bất kỳ chi tiết nào trong nhóm
                 })
                 .ToList();
