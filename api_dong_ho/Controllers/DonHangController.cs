@@ -196,7 +196,7 @@ namespace api_dong_ho.Controllers
             var sanphamsQuery = _context.chiTietDonHangs.AsQueryable();
 
             var result = sanphamsQuery
-                .Where(p =>  p.MaDH == maDH)
+                .Where(p => p.MaDH == maDH)
                 .GroupBy(item => new { item.MaSP })
                 .Select(p => new DonHanguse
                 {
@@ -216,6 +216,7 @@ namespace api_dong_ho.Controllers
                     Hinha = p.First().SanPham.HinhAnhs.FirstOrDefault().TenHinhAnh ?? "",
                     TenKT = string.Join(", ", p.Select(g => g.KichThuoc.TenKichThuoc).Distinct()),
                     TenMS = string.Join(", ", p.Select(g => g.MauSac.TenMauSac).Distinct()),
+                    NgayGiao = p.FirstOrDefault().DonHang.NgayTao,
                     SoLuong = p.Sum(g => g.SoLuong),
                     Gia = p.First().DonGia // Sử dụng DonGia từ bất kỳ chi tiết nào trong nhóm
                 })

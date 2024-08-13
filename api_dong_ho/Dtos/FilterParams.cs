@@ -8,5 +8,6 @@
         public int? MaMauSac { get; set; }
         public int? GiaToiThieu { get; set; }
         public int? GiaToiDa { get; set; }
+        public int? LastLoadedId { get; set; }
     }
 }
