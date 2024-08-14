@@ -348,6 +348,7 @@ namespace api_dong_ho.Controllers
 
       <div style="" margin-top: 10px; text-align: left;"">
         <p style=""margin:0"">Tổng tiền hàng: {donHang.TongTien.ToString("N0")} ₫</p>
+<p style=""margin:0"">Đơn hàng của bạn đã được duyệt, đơn hàng sẽ sỡm được giao đến tay bạn, vui lòng chú ý điện thoại</p>
       </div>
     </div>
   </div>

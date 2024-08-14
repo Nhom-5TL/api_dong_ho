@@ -327,6 +327,8 @@ namespace api_dong_ho.Controllers
         {
             var query = _context.SanPham
                 .Include(sp => sp.HinhAnhs)
+                .Include(sp => sp.KichThuocs)
+                .Include(sp => sp.MauSacs)
                 .AsQueryable();
 
             if (filterParams.MaLoai.HasValue)
@@ -339,14 +341,14 @@ namespace api_dong_ho.Controllers
                 query = query.Where(sp => sp.MaNhanHieu == filterParams.MaNhanHieu.Value);
             }
 
-            if (filterParams.MaKichThuoc.HasValue)
+            if (!string.IsNullOrEmpty(filterParams.TenKichThuoc))
             {
-                query = query.Where(sp => sp.KichThuocs != null && sp.KichThuocs.Any(kt => kt.MaKichThuoc == filterParams.MaKichThuoc.Value));
+                query = query.Where(sp => sp.KichThuocs != null && sp.KichThuocs.Any(kt => kt.TenKichThuoc == filterParams.TenKichThuoc));
             }
 
-            if (filterParams.MaMauSac.HasValue)
+            if (!string.IsNullOrEmpty(filterParams.TenMauSac))
             {
-                query = query.Where(sp => sp.MauSacs != null && sp.MauSacs.Any(ms => ms.MaMauSac == filterParams.MaMauSac.Value));
+                query = query.Where(sp => sp.MauSacs != null && sp.MauSacs.Any(ms => ms.TenMauSac == filterParams.TenMauSac));
             }
 
             if (filterParams.GiaToiThieu.HasValue)
@@ -359,6 +361,10 @@ namespace api_dong_ho.Controllers
                 query = query.Where(sp => sp.Gia <= filterParams.GiaToiDa.Value);
             }
 
+            if (!string.IsNullOrWhiteSpace(filterParams.SearchTerm))
+            {
+                query = query.Where(sp => sp.TenSP.Contains(filterParams.SearchTerm));
+            }
             if (filterParams.LastLoadedId.HasValue)
             {
                 query = query.Where(sp => sp.MaSP > filterParams.LastLoadedId.Value);
@@ -371,13 +377,13 @@ namespace api_dong_ho.Controllers
                 Gia = sp.Gia,
                 MoTa = sp.MoTa,
                 TenHinhAnhDauTien = sp.HinhAnhs.Any() ? sp.HinhAnhs.OrderBy(ha => ha.MaHinhAnh).FirstOrDefault().TenHinhAnh : "",
-            })
-            .OrderBy(sp => sp.MaSP)
-            .Take(8)
-            .ToListAsync();
+            }).OrderBy(sp => sp.MaSP)
+       .Take(8)
+       .ToListAsync();
 
             return Ok(products);
         }
+
 
         [HttpPost("update-views/{maSP}")]
         public async Task<IActionResult> UpdateProductViews(int maSP)
