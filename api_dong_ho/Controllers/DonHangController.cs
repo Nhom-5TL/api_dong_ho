@@ -226,44 +226,18 @@ namespace api_dong_ho.Controllers
 
 
         [HttpGet("DonHUSER")]
-        public ActionResult<IEnumerable<ChiTietDonHang>> DonHUSER(int? matt, int? maKH, int pageNumber = 1, int pageSize = 10)
+        public ActionResult<IEnumerable<ChiTietDonHang>> DonHUSER(int? matt, int? maKH, int pageNumber = 1, int pageSize = 5)
         {
-
-            //if (maKH == null)
-            //{
-            //    return Unauthorized(new { error = "Mã khách hàng không được xác định." });
-            //}
-
-            //var sanphamsQuery = _context.chiTietDonHangs.AsQueryable();
-
-
-            //if (matt.HasValue)
-            //    {
-            //        sanphamsQuery = sanphamsQuery.Where(p => p.DonHang.TrangThai == matt.Value);
-            //    }
-
-            //    var result = sanphamsQuery
-            //        .Where(p => p.DonHang.MaKh == maKH && p.MaDH = DonHang.MaDH)
-            //        .Select(p => new DonHanguse
-            //        {
-            //            Id = p.MaDH,
-            //            Tensp = p.SanPham.TenSP,
-            //            //Hinha = p.SanPham. ?? "",
-            //            Soluong = p.SoLuong,
-            //            giaB = p.DonGia ,
-            //            TrangThaiThanhToan = p.DonHang.TrangThaiThanhToan,
-            //            TinhTrang = p.DonHang.TrangThai,
-            //            GhiChu = p.DonHang.LyDoHuy,
-            //            NgayNhan = p.DonHang.NgayNhan,
-            //            NgayGiao = p.DonHang.NgayTao,
-            //            NgayHuy = p.DonHang.NgayHuy,
-            //        })
-            //        .ToList();
             var sanphamsQuery = _context.DonHangs.Include(p => p.ChiTietDonHangs).ThenInclude(p => p.SanPham).AsQueryable();
+            //if (matt.HasValue)
 
-            var totalRecords = sanphamsQuery.Count();
+            //{
+            //    sanphamsQuery = sanphamsQuery.Where(p => p.TrangThai == matt.Value);
+
+            //}
+            var totalRecords = sanphamsQuery.Where(p => p.MaKh == maKH).Count();
             var result = sanphamsQuery
-                .Where(p => p.MaKh == maKH)
+                .Where(p => p.MaKh == maKH && p.TrangThai == matt)
                 .Skip((pageNumber - 1) * pageSize)
         .Take(pageSize)
                 .Select(p => new DonHanguse

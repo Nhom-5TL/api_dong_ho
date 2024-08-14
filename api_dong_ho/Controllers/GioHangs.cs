@@ -277,7 +277,8 @@ namespace api_dong_ho.Controllers
 
                     await db.SaveChangesAsync();
                     await transaction.CommitAsync();
-                    HttpContext.Session.Remove(MySetting.GioHang_KEY);
+                    cart.Clear(); // Xóa danh sách cart
+                    HttpContext.Session.Remove(MySetting.GioHang_KEY); // Xóa khóa trong session
                     return Ok(donHang);
                 }
                 catch (DbUpdateException dbEx)
@@ -298,7 +299,7 @@ namespace api_dong_ho.Controllers
             var orderDetails = db.chiTietDonHangs
                 .Where(od => od.MaDH == donHang.MaDH)
                 .Include(od => od.SanPham)
-                .ThenInclude(sa => sa.HinhAnhs).Where(od => od.MaDH == donHang.MaDH)
+                .ThenInclude(sa => sa.HinhAnhs)
                 .ToList();
 
             var customer = db.KhachHang.Find(donHang.MaKh);
@@ -306,57 +307,109 @@ namespace api_dong_ho.Controllers
             var ha = db.HinhAnhs.Find(donHang.MaDH);
 
             var invoiceHtml = $@"
-  <div style="" color: black; margin: 0"">
-  <h2 style=""margin:0"">Hóa đơn điện tử: #DH00{donHang.MaDH}</h2>
-<h3 style=""margin:0"">Cửa hàng đồng hồ COZA</h3>
-  <div style="" display: flex; justify-content: center; align-items: center;"">
-    <div style=""border-radius: 5px; color: black"">
- <ul style=""margin:0; color: black"">
-   <li>
-     <p style=""margin:0; color: black"">Tên khách hàng: <b>{customer.TenKh}</b></p>
-   </li>
-   <li>
-     <p style=""margin:0; color: black"">Số điện thoại: <b>{customer.SDT}</b></p>
-   </li>
-<li>
-     <p style=""margin:0; color: black"">Tên người nhận: <b>{donHang.TenKh}</b></p>
-   </li>
-<li>
-     <p style=""margin:0; color: black"">Số điện thoại người nhận: <b>{donHang.SDT}</b></p>
-   </li>
- </ul>
+    <html>
+    <head>
+        <style>
+            body {{
+                font-family: Arial, sans-serif;
+                color: #333;
+                margin: 0;
+                padding: 0;
+                background-color: #f4f4f4;
+            }}
+            .container {{
+                width: 80%;
+                margin: 0 auto;
+                background-color: #fff;
+                padding: 20px;
+                border-radius: 8px;
+                box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            }}
+            h2, h3 {{
+                margin: 0;
+                color: #444;
+            }}
+            .header, .footer {{
+                text-align: center;
+                margin-bottom: 20px;
+            }}
+            .footer {{
+                font-size: 14px;
+                color: #777;
+            }}
+            .details {{
+                margin-top: 20px;
+            }}
+            table {{
+                width: 100%;
+                border-collapse: collapse;
+            }}
+            th, td {{
+                border: 1px solid #ddd;
+                padding: 8px;
+                text-align: left;
+            }}
+            th {{
+                background-color: #f2f2f2;
+            }}
+            .total {{
+                margin-top: 20px;
+                font-weight: bold;
+            }}
+        </style>
+    </head>
+    <body>
+        <div class=""container"">
+            <div class=""header"">
+                <h2>Hóa đơn điện tử: #DH00{donHang.MaDH}</h2>
+                <h3>Cửa hàng đồng hồ COZA</h3>
+            </div>
 
-      <h3 style=""margin:0; color: black"">Thông tin chi tiết đơn hàng</h3>
-      <table style="" border-collapse: collapse;"">
-          <th style=""border: 1px solid #ddd; padding: 5px; text-align: left; background-color: #f2f2f2;"">Sản phẩm
-          </th>
-          <th style="" border: 1px solid #ddd; padding: 5px; text-align: left; background-color: #f2f2f2;"">Giá tiền
-          </th>
-          <th style="" border: 1px solid #ddd; padding: 5px; text-align: left; background-color: #f2f2f2;"">Số lượng
-          </th>
-          <th style="" border: 1px solid #ddd; padding: 5px; text-align: left; background-color: #f2f2f2;"">Tổng tiền
-          </th>
-        </tr>
-        {string.Join("\n", orderDetails.Select(od => $@"
-        <tr>
-          <td style="" border: 1px solid #ddd; padding: 5px; text-align: left;"">{od.TenSP}</td>
-          <td style="" border: 1px solid #ddd; padding: 5px; text-align: left;"">{od.DonGia?.ToString("N0") ?? "0"} ₫</td>
-          <td style="" border: 1px solid #ddd; padding: 5px; text-align: left;"">x{od.SoLuong}</td>
-          <td style="" border: 1px solid #ddd; padding: 5px; text-align: left;"">{(od.DonGia * od.SoLuong)?.ToString("N0") ?? "0"} ₫</td>
-        </tr>"))}
-      </table>
+            <div class=""details"">
+                <p><strong>Tên khách hàng:</strong> {customer.TenKh}</p>
+                <p><strong>Số điện thoại:</strong> {customer.SDT}</p>
+                <p><strong>Tên người nhận:</strong> {donHang.TenKh}</p>
+                <p><strong>Số điện thoại người nhận:</strong> {donHang.SDT}</p>
 
-      <div style="" margin-top: 10px; text-align: left;"">
-        <p style=""margin:0"">Tổng tiền hàng: {donHang.TongTien.ToString("N0")} ₫</p>
-<p style=""margin:0"">Đơn hàng của bạn đã được duyệt, đơn hàng sẽ sỡm được giao đến tay bạn, vui lòng chú ý điện thoại</p>
-      </div>
-    </div>
-  </div>
-</div>
-  ";
+                <h3>Thông tin chi tiết đơn hàng</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Sản phẩm</th>
+                            <th>Giá tiền</th>
+                            <th>Số lượng</th>
+                            <th>Tổng tiền</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {string.Join("\n", orderDetails.Select(od => $@"
+                        <tr>
+                            <td>{od.TenSP}</td>
+                            <td>{od.DonGia?.ToString("N0") ?? "0"} ₫</td>
+                            <td>x{od.SoLuong}</td>
+                            <td>{(od.DonGia * od.SoLuong)?.ToString("N0") ?? "0"} ₫</td>
+                        </tr>"))}
+                    </tbody>
+                </table>
+
+                <div class=""total"">
+                    <p><strong>Tổng tiền hàng:</strong> {donHang.TongTien.ToString("N0")} ₫</p>
+                </div>
+
+                <p>Đơn hàng của bạn đã được duyệt, đơn hàng sẽ sớm được giao đến tay bạn. Vui lòng chú ý điện thoại để nhận thông tin giao hàng.</p>
+            </div>
+
+            <div class=""footer"">
+                <p>Chân thành cảm ơn bạn đã mua sắm tại Cửa hàng đồng hồ COZA.</p>
+            </div>
+        </div>
+    </body>
+    </html>
+    ";
 
             return invoiceHtml;
         }
+
         private async Task SendInvoiceEmailAsync(int accountId, string invoiceDetails)
         {
             var user = await db.KhachHang.FindAsync(accountId);

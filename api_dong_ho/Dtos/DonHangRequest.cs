@@ -19,9 +19,6 @@ namespace api_dong_ho.Dtos
         [MinLength(9, ErrorMessage = "Ít nhất 9 ký tự")]
         [RegularExpression(@"0[983]\d{8}", ErrorMessage = "Vui lòng đúng định dạng số điện thoại (0 [983])")]
         public string SDT { get; set; }
-        [Required(ErrorMessage = "Ghi Chú không được để trống")]
-        [MaxLength(50, ErrorMessage = "Tối đa 50 ký tự")]
-        [MinLength(5, ErrorMessage = "Ít nhất 5 ký tự")]
         public string GhiChu { get; set; }
 
         public decimal TongTien { get; set; }
