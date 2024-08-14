@@ -23,6 +23,7 @@ namespace api_dong_ho.Models
 
         public int HTVC { get; set; } = 1;
 
+        public int SoLuotXem { get; set; } = 0;
 
         public int TrangThai { get; set; } = 1;
 

@@ -56,8 +56,12 @@ namespace api_dong_ho.Controllers
                         GhiChu = request.GhiChu,
                         TrangThaiThanhToan = request.TrangThaiThanhToan,
                         MaKh = request.MaKH,
+                        TinhThanh = request.TinhThanh,
+                        QuanHuyen = request.QuanHuyen,
+                        XaPhuong = request.XaPhuong,
                         NgayTao = DateTime.Now,
-                        TrangThai = 0
+                        TrangThai = 0,
+                        TongTien = 0
                     };
 
                     _context.DonHangs.Add(donHang);
@@ -100,11 +104,14 @@ namespace api_dong_ho.Controllers
                         };
 
                         _context.chiTietDonHangs.Add(chiTietDonHang);
+
+
+                        donHang.TongTien += chiTietDonHang.SoLuong * chiTietDonHang.DonGia ?? 0;
                     }
 
                     await _context.SaveChangesAsync();
                     await transaction.CommitAsync();
-
+                    HttpContext.Session.Remove(MySetting.GioHang_KEY);
                     return Ok(new { MaDH = donHang.MaDH });
                 }
                 catch (DbUpdateException dbEx)
@@ -218,123 +225,160 @@ namespace api_dong_ho.Controllers
         }
 
 
-        //[HttpGet("DonHUSER")]
-        //public ActionResult<IEnumerable<ChiTietDonHang>> DonHUSER(int? matt, int? maKH)
-        //{
+        [HttpGet("DonHUSER")]
+        public ActionResult<IEnumerable<ChiTietDonHang>> DonHUSER(int? matt, int? maKH, int pageNumber = 1, int pageSize = 10)
+        {
 
-        //    //if (maKH == null)
-        //    //{
-        //    //    return Unauthorized(new { error = "Mã khách hàng không được xác định." });
-        //    //}
+            //if (maKH == null)
+            //{
+            //    return Unauthorized(new { error = "Mã khách hàng không được xác định." });
+            //}
 
-        //    //var sanphamsQuery = _context.chiTietDonHangs.AsQueryable();
-
-
-        //    //if (matt.HasValue)
-        //    //    {
-        //    //        sanphamsQuery = sanphamsQuery.Where(p => p.DonHang.TrangThai == matt.Value);
-        //    //    }
-
-        //    //    var result = sanphamsQuery
-        //    //        .Where(p => p.DonHang.MaKh == maKH && p.MaDH = DonHang.MaDH)
-        //    //        .Select(p => new DonHanguse
-        //    //        {
-        //    //            Id = p.MaDH,
-        //    //            Tensp = p.SanPham.TenSP,
-        //    //            //Hinha = p.SanPham. ?? "",
-        //    //            Soluong = p.SoLuong,
-        //    //            giaB = p.DonGia ,
-        //    //            TrangThaiThanhToan = p.DonHang.TrangThaiThanhToan,
-        //    //            TinhTrang = p.DonHang.TrangThai,
-        //    //            GhiChu = p.DonHang.LyDoHuy,
-        //    //            NgayNhan = p.DonHang.NgayNhan,
-        //    //            NgayGiao = p.DonHang.NgayTao,
-        //    //            NgayHuy = p.DonHang.NgayHuy,
-        //    //        })
-        //    //        .ToList();
-        //    var sanphamsQuery = _context.DonHangs.Include(p => p.ChiTietDonHangs).ThenInclude(p => p.SanPham).AsQueryable();
+            //var sanphamsQuery = _context.chiTietDonHangs.AsQueryable();
 
 
-        //    var result = sanphamsQuery
-        //        .Where(p => p.MaKh == maKH )
-        //        .Select(p => new DonHanguse
-        //        {
-        //            Id = p.MaDH,
-        //            Tensp = p.ChiTietDonHangs.Select(ct => ct.TenSP).FirstOrDefault(), // Chọn tên sản phẩm từ ChiTietDonHangs
-        //            Hinha = p.ChiTietDonHangs.Select(ct => ct.SanPham.HinhAnhs.FirstOrDefault().TenHinhAnh).FirstOrDefault() ?? "",
-        //            //p.ChiTietDonHangs.Select(ct => ct.SanPham.HinhAnhs).FirstOrDefault() ?? "", // Chọn hình ảnh từ SanPham nếu có
-        //            //Soluong = p.ChiTietDonHangs.Select(ct => ct.SoLuong).Sum(), // Tổng số lượng từ tất cả các ChiTietDonHangs
-        //            //giaB = p.ChiTietDonHangs.Select(ct => ct.DonGia).Sum(), // Tổng giá từ tất cả các ChiTietDonHangs
-        //            TenKh = p.TenKh,
-        //            diaChi = p.DiaChi,
-        //            sdt = p.SDT,
-        //            TrangThaiThanhToan = p.TrangThaiThanhToan,
-        //            TinhTrang = p.TrangThai,
-        //            GhiChu = p.GhiChu,
-        //            NgayNhan = p.NgayNhan,
-        //            NgayGiao = p.NgayTao,
-        //            NgayHuy = p.NgayHuy
-        //        })
-        //        .ToList();
-        //    return Ok(result);
+            //if (matt.HasValue)
+            //    {
+            //        sanphamsQuery = sanphamsQuery.Where(p => p.DonHang.TrangThai == matt.Value);
+            //    }
 
-        //}
+            //    var result = sanphamsQuery
+            //        .Where(p => p.DonHang.MaKh == maKH && p.MaDH = DonHang.MaDH)
+            //        .Select(p => new DonHanguse
+            //        {
+            //            Id = p.MaDH,
+            //            Tensp = p.SanPham.TenSP,
+            //            //Hinha = p.SanPham. ?? "",
+            //            Soluong = p.SoLuong,
+            //            giaB = p.DonGia ,
+            //            TrangThaiThanhToan = p.DonHang.TrangThaiThanhToan,
+            //            TinhTrang = p.DonHang.TrangThai,
+            //            GhiChu = p.DonHang.LyDoHuy,
+            //            NgayNhan = p.DonHang.NgayNhan,
+            //            NgayGiao = p.DonHang.NgayTao,
+            //            NgayHuy = p.DonHang.NgayHuy,
+            //        })
+            //        .ToList();
+            var sanphamsQuery = _context.DonHangs.Include(p => p.ChiTietDonHangs).ThenInclude(p => p.SanPham).AsQueryable();
+
+            var totalRecords = sanphamsQuery.Count();
+            var result = sanphamsQuery
+                .Where(p => p.MaKh == maKH)
+                .Skip((pageNumber - 1) * pageSize)
+        .Take(pageSize)
+                .Select(p => new DonHanguse
+                {
+                    Id = p.MaDH,
+                    Tensp = p.ChiTietDonHangs.Select(ct => ct.TenSP).FirstOrDefault(), // Chọn tên sản phẩm từ ChiTietDonHangs
+                    Hinha = p.ChiTietDonHangs.Select(ct => ct.SanPham.HinhAnhs.FirstOrDefault().TenHinhAnh).FirstOrDefault() ?? "",
+                    //p.ChiTietDonHangs.Select(ct => ct.SanPham.HinhAnhs).FirstOrDefault() ?? "", // Chọn hình ảnh từ SanPham nếu có
+                    //Soluong = p.ChiTietDonHangs.Select(ct => ct.SoLuong).Sum(), // Tổng số lượng từ tất cả các ChiTietDonHangs
+                    //giaB = p.ChiTietDonHangs.Select(ct => ct.DonGia).Sum(), // Tổng giá từ tất cả các ChiTietDonHangs
+                    TenKh = p.TenKh,
+                    diaChi = p.DiaChi,
+                    sdt = p.SDT,
+                    TrangThaiThanhToan = p.TrangThaiThanhToan,
+                    TinhTrang = p.TrangThai,
+                    GhiChu = p.GhiChu,
+                    NgayNhan = p.NgayNhan,
+                    NgayGiao = p.NgayTao,
+                    NgayHuy = p.NgayHuy,
+                    xaPhuong = p.XaPhuong,
+                    tinhThanh = p.TinhThanh,
+                    quanHuyen = p.QuanHuyen
+                })
+                .ToList();
+            return Ok(new
+            {
+                TotalRecords = totalRecords,
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                Data = result
+            });
+
+        }
 
 
 
-        //[HttpGet("DonHUSERCT")]
-        //public ActionResult<IEnumerable<ChiTietDonHang>> DonHUSERCT( int? maDH)
-        //{
+        [HttpGet("DonHUSERCT")]
+        public ActionResult<IEnumerable<ChiTietDonHang>> DonHUSERCT(int? maDH)
+        {
 
-        //    if (maDH == null)
-        //    {
-        //        return Unauthorized(new { error = "Mã khách hàng không được xác định." });
-        //    }
+            if (maDH == null)
+            {
+                return Unauthorized(new { error = "Mã khách hàng không được xác định." });
+            }
 
-        //    var sanphamsQuery = _context.chiTietDonHangs.AsQueryable();
+            var sanphamsQuery = _context.chiTietDonHangs.AsQueryable();
 
-        //    var result = sanphamsQuery
-        //        .Where(p =>  p.MaDH == maDH)
-        //        .GroupBy(item => new { item.MaSP })
-        //        .Select(p => new DonHanguse
-        //        {
-        //            Id = p.First().DonHang.MaDH,
-        //            //Tensp = p.TenSP, // Chọn tên sản phẩm từ ChiTietDonHangs
-        //            //Hinha = p.SanPham.HinhAnhs.FirstOrDefault().TenHinhAnh ?? "",
-        //            //p.ChiTietDonHangs.Select(ct => ct.SanPham.HinhAnhs).FirstOrDefault() ?? "", // Chọn hình ảnh từ SanPham nếu có
-        //            //Soluong = p.ChiTietDonHangs.Select(ct => ct.SoLuong).Sum(), // Tổng số lượng từ tất cả các ChiTietDonHangs
-        //            //giaB = p.ChiTietDonHangs.Select(ct => ct.DonGia).Sum(), // Tổng giá từ tất cả các ChiTietDonHangs
-        //            TenKh = p.First().DonHang.TenKh,
-        //            diaChi = p.First().DonHang.DiaChi,
-        //            sdt = p.First().DonHang.SDT,
-        //            TrangThaiThanhToan = p.First().DonHang.TrangThaiThanhToan,
-        //            GhiChu = p.First().DonHang.GhiChu,
-        //            MaSP = p.Key.MaSP,
-        //            Tensp = p.First().TenSP,
-        //            Hinha = p.First().SanPham.HinhAnhs.FirstOrDefault().TenHinhAnh ?? "",
-        //            TenKT = string.Join(", ", p.Select(g => g.KichThuoc.TenKichThuoc).Distinct()),
-        //            TenMS = string.Join(", ", p.Select(g => g.MauSac.TenMauSac).Distinct()),
-        //            SoLuong = p.Sum(g => g.SoLuong),
-        //            Gia = p.First().DonGia // Sử dụng DonGia từ bất kỳ chi tiết nào trong nhóm
-        //        })
-        //        .ToList();
-        //    //var groupedItems = sanphamsQuery
-        //    //       .Where(item => item.MaDH == maDH)
-        //    //       .GroupBy(item => new { item.MaSP })
-        //    //       .Select(group => new
-        //    //       {
-        //    //           MaSP = group.Key.MaSP,
-        //    //           TenSP = group.First().TenSP,
-        //    //           HinhAnh = group.First().SanPham.HinhAnhs.FirstOrDefault().TenHinhAnh ?? "",
-        //    //           TenKT = string.Join(", ", group.Select(g => g.KichThuoc.TenKichThuoc).Distinct()),
-        //    //           TenMS = string.Join(", ", group.Select(g => g.MauSac.TenMauSac).Distinct()),
-        //    //           SoLuong = group.Sum(g => g.SoLuong),
-        //    //           Gia = group.First().DonGia // Sử dụng DonGia từ bất kỳ chi tiết nào trong nhóm
-        //    //       })
-        //    //       .ToList();
-        //    return Ok(result);
+            var result = sanphamsQuery
+                .Where(p => p.MaDH == maDH)
+                .GroupBy(item => new { item.MaSP })
+                .Select(p => new DonHanguse
+                {
+                    Id = p.First().DonHang.MaDH,
+                    //Tensp = p.TenSP, // Chọn tên sản phẩm từ ChiTietDonHangs
+                    //Hinha = p.First().SanPham.HinhAnhs.FirstOrDefault().TenHinhAnh ?? "",
+                    //p.ChiTietDonHangs.Select(ct => ct.SanPham.HinhAnhs).FirstOrDefault() ?? "", // Chọn hình ảnh từ SanPham nếu có
+                    //Soluong = p.ChiTietDonHangs.Select(ct => ct.SoLuong).Sum(), // Tổng số lượng từ tất cả các ChiTietDonHangs
+                    //giaB = p.ChiTietDonHangs.Select(ct => ct.DonGia).Sum(), // Tổng giá từ tất cả các ChiTietDonHangs
+                    TenKh = p.First().DonHang.TenKh,
+                    diaChi = p.First().DonHang.DiaChi,
+                    sdt = p.First().DonHang.SDT,
+                    TrangThaiThanhToan = p.First().DonHang.TrangThaiThanhToan,
+                    GhiChu = p.First().DonHang.GhiChu,
+                    MaSP = p.Key.MaSP,
+                    Tensp = p.First().TenSP,
+                    Hinha = p.First().SanPham.HinhAnhs.FirstOrDefault().TenHinhAnh ?? "",
+                    TenKT = string.Join(", ", p.Select(g => g.KichThuoc.TenKichThuoc).Distinct()),
+                    TenMS = string.Join(", ", p.Select(g => g.MauSac.TenMauSac).Distinct()),
+                    SoLuong = p.Sum(g => g.SoLuong),
+                    NgayGiao = p.FirstOrDefault().DonHang.NgayTao,
+                    xaPhuong = p.First().DonHang.XaPhuong,
+                    tinhThanh = p.First().DonHang.TinhThanh,
+                    quanHuyen = p.First().DonHang.QuanHuyen,
+                    Gia = p.First().DonGia // Sử dụng DonGia từ bất kỳ chi tiết nào trong nhóm
+                })
+                .ToList();
+            //var groupedItems = sanphamsQuery
+            //       .Where(item => item.MaDH == maDH)
+            //       .GroupBy(item => new { item.MaSP })
+            //       .Select(group => new
+            //       {
+            //           MaSP = group.Key.MaSP,
+            //           TenSP = group.First().TenSP,
+            //           HinhAnh = group.First().SanPham.HinhAnhs.FirstOrDefault().TenHinhAnh ?? "",
+            //           TenKT = string.Join(", ", group.Select(g => g.KichThuoc.TenKichThuoc).Distinct()),
+            //           TenMS = string.Join(", ", group.Select(g => g.MauSac.TenMauSac).Distinct()),
+            //           SoLuong = group.Sum(g => g.SoLuong),
+            //           Gia = group.First().DonGia // Sử dụng DonGia từ bất kỳ chi tiết nào trong nhóm
+            //       })
+            //       .ToList();
+            return Ok(result);
 
-        //}
+            //                var result = sanphamsQuery
+            //                    .Where(p => p.DonHang.MaKh == maKH)
+            //                    .Select(p => new DonHanguse
+            //                    {
+            //                        Id = p.MaDH,
+            //                        Tensp = p.SanPham.TenSP,
+            //                        //Hinha = p.SanPham. ?? "",
+            //                        Soluong = p.SoLuong,
+            //                        giaB = p.DonGia ,
+            //                        TrangThaiThanhToan = p.DonHang.TrangThaiThanhToan,
+            //                        TinhTrang = p.DonHang.TrangThai,
+            //                        TinhTrangTT = p.DonHang.TrangThaiTT,
+            //                        GhiChu = p.DonHang.LyDoHuy,
+            //                        NgayNhan = p.DonHang.NgayNhan,
+            //                        NgayGiao = p.DonHang.NgayTao,
+            //                        NgayHuy = p.DonHang.NgayHuy,
+            //                    })
+            //                    .ToList();
+
+            //                return Ok(result);
+
+
+        }
 
         [HttpPut("HuyDonHang")]
         public async Task<IActionResult> HuyDonHang(int idDonHang)

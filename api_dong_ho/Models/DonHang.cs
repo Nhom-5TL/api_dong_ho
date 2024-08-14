@@ -19,8 +19,12 @@ namespace api_dong_ho.Models
         public string LyDoHuy { get; set; } = "";
         public DateTime? NgayHuy { get; set; }
         public DateTime? NgayNhan { get; set; }
+        public decimal TongTien {  get; set; }
         public string ?DiaChi { get; set; }
         public string ?SDT { get; set; }
+        public string? TinhThanh { get; set; }
+        public string? QuanHuyen { get; set; }
+        public string? XaPhuong { get; set; }
 
         public ICollection<ChiTietDonHang>? ChiTietDonHangs { get; set; }
     }

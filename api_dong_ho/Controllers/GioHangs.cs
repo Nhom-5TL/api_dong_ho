@@ -1,9 +1,14 @@
 ﻿using api_dong_ho.Dtos;
 using api_dong_ho.Models;
+using EllipticCurve.Utils;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using SendGrid.Helpers.Mail;
+using System.Globalization;
 using System.Linq;
+using System.Net.Mail;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace api_dong_ho.Controllers
@@ -55,7 +60,7 @@ namespace api_dong_ho.Controllers
                         TenSP = group.First().TenSP,
                         HinhAnh = group.First().HinhAnh,
                         TenKT = string.Join(", ", group.Select(g => g.TenKT).Distinct()),
-                        TenMS =string.Join(", ", group.Select(g => g.TenMS).Distinct()),
+                        TenMS = string.Join(", ", group.Select(g => g.TenMS).Distinct()),
                         SoLuong = group.Sum(g => g.SoLuong),
                         Gia = group.First().gia // Sử dụng DonGia từ bất kỳ chi tiết nào trong nhóm
                     })
@@ -76,23 +81,23 @@ namespace api_dong_ho.Controllers
                 var maKH = request.maKH;
                 int id = request.maSP;
                 var soLuong = request.SoLuong;
-                var gioh = cart;  
+                var gioh = cart;
                 var sanp = db.SanPham
                     .Include(sp => sp.HinhAnhs)
                     .Include(sp => sp.KichThuocs)
                     .Include(sp => sp.MauSacs)
                     .SingleOrDefault(sp => sp.MaSP == id);
                 var item = gioh.SingleOrDefault(p => p.MaSP == id && p.TenKT == sanp.KichThuocs?.FirstOrDefault(kt => kt.MaKichThuoc == request.maKT)?.TenKichThuoc && p.TenMS == sanp.MauSacs?.FirstOrDefault(ms => ms.MaMauSac == request.maMS)?.TenMauSac);
-                  
-              
 
-                    if (sanp == null)
-                    {
-                        return NotFound("Sản Phẩm Không Tồn Tại.");
-                    }
-  if (item == null)
+
+
+                if (sanp == null)
                 {
-                
+                    return NotFound("Sản Phẩm Không Tồn Tại.");
+                }
+                if (item == null)
+                {
+
                     item = new giohang
                     {
                         MaKH = request.maKH,
@@ -176,7 +181,7 @@ namespace api_dong_ho.Controllers
             {
                 HttpContext.Session.Set(MySetting.GioHang_KEY, gioh);
             }
-            return  Ok();
+            return Ok();
         }
         [HttpDelete("xoagh")]
         public async Task<IActionResult> xoagh(int id)
@@ -217,8 +222,12 @@ namespace api_dong_ho.Controllers
                     GhiChu = request.GhiChu,
                     TrangThaiThanhToan = request.TrangThaiThanhToan,
                     MaKh = request.MaKH,
+                    TinhThanh = request.TinhThanh,
+                    QuanHuyen = request.QuanHuyen,
+                    XaPhuong = request.XaPhuong,
                     NgayTao = DateTime.Now,
-                    TrangThai = 0
+                    TrangThai = 0,
+                    TongTien = 0,
                 };
                 try
                 {
@@ -262,6 +271,8 @@ namespace api_dong_ho.Controllers
                         };
 
                         db.chiTietDonHangs.Add(chiTietDonHang);
+
+                        donHang.TongTien += chiTietDonHang.SoLuong * chiTietDonHang.DonGia ?? 0;
                     }
 
                     await db.SaveChangesAsync();
@@ -280,6 +291,107 @@ namespace api_dong_ho.Controllers
                     await transaction.RollbackAsync();
                     return StatusCode(500, new { error = "An error occurred while saving the entity changes.", details = ex.Message });
                 }
+            }
+        }
+        private string GenerateInvoiceDetails(DonHang donHang)
+        {
+            var orderDetails = db.chiTietDonHangs
+                .Where(od => od.MaDH == donHang.MaDH)
+                .Include(od => od.SanPham)
+                .ThenInclude(sa => sa.HinhAnhs).Where(od => od.MaDH == donHang.MaDH)
+                .ToList();
+
+            var customer = db.KhachHang.Find(donHang.MaKh);
+
+            var ha = db.HinhAnhs.Find(donHang.MaDH);
+
+            var invoiceHtml = $@"
+  <div style="" color: black; margin: 0"">
+  <h2 style=""margin:0"">Hóa đơn điện tử: #DH00{donHang.MaDH}</h2>
+<h3 style=""margin:0"">Cửa hàng đồng hồ COZA</h3>
+  <div style="" display: flex; justify-content: center; align-items: center;"">
+    <div style=""border-radius: 5px; color: black"">
+ <ul style=""margin:0; color: black"">
+   <li>
+     <p style=""margin:0; color: black"">Tên khách hàng: <b>{customer.TenKh}</b></p>
+   </li>
+   <li>
+     <p style=""margin:0; color: black"">Số điện thoại: <b>{customer.SDT}</b></p>
+   </li>
+<li>
+     <p style=""margin:0; color: black"">Tên người nhận: <b>{donHang.TenKh}</b></p>
+   </li>
+<li>
+     <p style=""margin:0; color: black"">Số điện thoại người nhận: <b>{donHang.SDT}</b></p>
+   </li>
+ </ul>
+
+      <h3 style=""margin:0; color: black"">Thông tin chi tiết đơn hàng</h3>
+      <table style="" border-collapse: collapse;"">
+          <th style=""border: 1px solid #ddd; padding: 5px; text-align: left; background-color: #f2f2f2;"">Sản phẩm
+          </th>
+          <th style="" border: 1px solid #ddd; padding: 5px; text-align: left; background-color: #f2f2f2;"">Giá tiền
+          </th>
+          <th style="" border: 1px solid #ddd; padding: 5px; text-align: left; background-color: #f2f2f2;"">Số lượng
+          </th>
+          <th style="" border: 1px solid #ddd; padding: 5px; text-align: left; background-color: #f2f2f2;"">Tổng tiền
+          </th>
+        </tr>
+        {string.Join("\n", orderDetails.Select(od => $@"
+        <tr>
+          <td style="" border: 1px solid #ddd; padding: 5px; text-align: left;"">{od.TenSP}</td>
+          <td style="" border: 1px solid #ddd; padding: 5px; text-align: left;"">{od.DonGia?.ToString("N0") ?? "0"} ₫</td>
+          <td style="" border: 1px solid #ddd; padding: 5px; text-align: left;"">x{od.SoLuong}</td>
+          <td style="" border: 1px solid #ddd; padding: 5px; text-align: left;"">{(od.DonGia * od.SoLuong)?.ToString("N0") ?? "0"} ₫</td>
+        </tr>"))}
+      </table>
+
+      <div style="" margin-top: 10px; text-align: left;"">
+        <p style=""margin:0"">Tổng tiền hàng: {donHang.TongTien.ToString("N0")} ₫</p>
+<p style=""margin:0"">Đơn hàng của bạn đã được duyệt, đơn hàng sẽ sỡm được giao đến tay bạn, vui lòng chú ý điện thoại</p>
+      </div>
+    </div>
+  </div>
+</div>
+  ";
+
+            return invoiceHtml;
+        }
+        private async Task SendInvoiceEmailAsync(int accountId, string invoiceDetails)
+        {
+            var user = await db.KhachHang.FindAsync(accountId);
+
+            using var mailMessage = new MailMessage();
+            mailMessage.From = new MailAddress("haunaru1155@gmail.com");
+            mailMessage.To.Add(new MailAddress(user.Email));
+            mailMessage.Subject = "Thông báo phát hành hóa đơn điện tử";
+            mailMessage.Body = invoiceDetails;
+            mailMessage.IsBodyHtml = true;
+
+            using var smtpClient = new SmtpClient("smtp.gmail.com");
+            smtpClient.Port = 587;
+            smtpClient.Credentials = new NetworkCredential("haunaru1155@gmail.com", "frvu mhkt pind hzrh");
+            smtpClient.EnableSsl = true;
+
+            await smtpClient.SendMailAsync(mailMessage);
+        }
+        [HttpPost("send-email-{orderId}")]
+        public async Task<IActionResult> SendEmail(int orderId)
+        {
+            try
+            {
+                var order = await db.DonHangs.FindAsync(orderId);
+                if (order == null)
+                {
+                    return NotFound("Không tìm thấy đơn hàng");
+                }
+                var mailInfor = GenerateInvoiceDetails(order);
+                SendInvoiceEmailAsync(order.MaKh, mailInfor);
+                return Ok(new { Success = true, Message = "Gửi hóa đơn thành công" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { Success = false, Message = ex.Message });
             }
         }
     }

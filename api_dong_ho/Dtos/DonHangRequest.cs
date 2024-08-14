@@ -23,8 +23,14 @@ namespace api_dong_ho.Dtos
         [MaxLength(50, ErrorMessage = "Tối đa 50 ký tự")]
         [MinLength(5, ErrorMessage = "Ít nhất 5 ký tự")]
         public string GhiChu { get; set; }
+
+        public decimal TongTien { get; set; }
         public int MaKH { get; set; }
         public string TrangThaiThanhToan { get; set; }
+
+        public string? TinhThanh { get; set; }
+        public string? QuanHuyen { get; set; }
+        public string? XaPhuong { get; set; }
 
         [Required]
         public List<ChiTietDonHangRequest> ChiTietDonHangs { get; set; }

@@ -27,10 +27,21 @@ namespace api_dong_ho.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<SanPhamDTO>>> GetSanPham()
+        public async Task<ActionResult<IEnumerable<SanPhamDTO>>> GetSanPham([FromQuery] int limit = 8, [FromQuery] int? lastLoadedId = null)
         {
-            var sanPhams = await _context.SanPham
+            var query = _context.SanPham
                 .Include(sp => sp.HinhAnhs)
+                .AsQueryable();
+
+            // Nếu lastLoadedId được cung cấp, chỉ lấy sản phẩm có mã lớn hơn
+            if (lastLoadedId.HasValue)
+            {
+                query = query.Where(sp => sp.MaSP > lastLoadedId.Value);
+            }
+
+            var sanPhams = await query
+                .OrderBy(sp => sp.MaSP)
+                .Take(limit)
                 .ToListAsync();
 
             var sanPhamDTOs = sanPhams.Select(sp => new SanPhamDTO
@@ -44,6 +55,7 @@ namespace api_dong_ho.Controllers
 
             return Ok(sanPhamDTOs);
         }
+
 
         [HttpGet("get-pro-img/{fileName}")]
         public async Task<ActionResult> GetImageName(string fileName)
@@ -268,6 +280,8 @@ namespace api_dong_ho.Controllers
         {
             var query = _context.SanPham
                 .Include(sp => sp.HinhAnhs)
+                .Include(sp => sp.KichThuocs)
+                .Include(sp => sp.MauSacs)
                 .AsQueryable();
 
             if (filterParams.MaLoai.HasValue)
@@ -280,14 +294,14 @@ namespace api_dong_ho.Controllers
                 query = query.Where(sp => sp.MaNhanHieu == filterParams.MaNhanHieu.Value);
             }
 
-            if (filterParams.MaKichThuoc.HasValue)
+            if (!string.IsNullOrEmpty(filterParams.TenKichThuoc))
             {
-                query = query.Where(sp => sp.KichThuocs != null && sp.KichThuocs.Any(kt => kt.MaKichThuoc == filterParams.MaKichThuoc.Value));
+                query = query.Where(sp => sp.KichThuocs != null && sp.KichThuocs.Any(kt => kt.TenKichThuoc == filterParams.TenKichThuoc));
             }
 
-            if (filterParams.MaMauSac.HasValue)
+            if (!string.IsNullOrEmpty(filterParams.TenMauSac))
             {
-                query = query.Where(sp => sp.MauSacs != null && sp.MauSacs.Any(ms => ms.MaMauSac == filterParams.MaMauSac.Value));
+                query = query.Where(sp => sp.MauSacs != null && sp.MauSacs.Any(ms => ms.TenMauSac == filterParams.TenMauSac));
             }
 
             if (filterParams.GiaToiThieu.HasValue)
@@ -300,6 +314,15 @@ namespace api_dong_ho.Controllers
                 query = query.Where(sp => sp.Gia <= filterParams.GiaToiDa.Value);
             }
 
+            if (!string.IsNullOrWhiteSpace(filterParams.SearchTerm))
+            {
+                query = query.Where(sp => sp.TenSP.Contains(filterParams.SearchTerm));
+            }
+            if (filterParams.LastLoadedId.HasValue)
+            {
+                query = query.Where(sp => sp.MaSP > filterParams.LastLoadedId.Value);
+            }
+
             var products = await query.Select(sp => new SanPhamDTO
             {
                 MaSP = sp.MaSP,
@@ -307,9 +330,45 @@ namespace api_dong_ho.Controllers
                 Gia = sp.Gia,
                 MoTa = sp.MoTa,
                 TenHinhAnhDauTien = sp.HinhAnhs.Any() ? sp.HinhAnhs.OrderBy(ha => ha.MaHinhAnh).FirstOrDefault().TenHinhAnh : "",
-            }).ToListAsync();
+            }).OrderBy(sp => sp.MaSP)
+       .Take(8)
+       .ToListAsync();
 
             return Ok(products);
+        }
+
+
+        [HttpPost("update-views/{maSP}")]
+        public async Task<IActionResult> UpdateProductViews(int maSP)
+        {
+            var sanPham = await _context.SanPham.FindAsync(maSP);
+            if (sanPham == null)
+            {
+                return NotFound();
+            }
+
+            // Tăng số lượt xem
+            sanPham.SoLuotXem += 1;
+
+            _context.Entry(sanPham).State = EntityState.Modified;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!SanPhamExists(maSP))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return NoContent();
         }
     }
 }
