@@ -101,31 +101,26 @@ namespace api_dong_ho.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutSanPham(int id, [FromForm] PutSanPham putSanPham)
+        public async Task<IActionResult> PutSanPham(int id, [FromForm] PutSanPham putSanPham, [FromForm] List<IFormFile> hinhanhtailen)
         {
             var sanPham = await _context.SanPham
                 .Include(sp => sp.HinhAnhs)
-                .Include(sp => sp.MauSacs)
-                .Include(sp => sp.KichThuocs)
                 .FirstOrDefaultAsync(sp => sp.MaSP == id);
-
             if (sanPham == null)
             {
                 return NotFound();
             }
 
-            // Update sản phẩm
             sanPham.TenSP = putSanPham.TenSP;
             sanPham.MoTa = putSanPham.MoTa;
             sanPham.Gia = putSanPham.Gia;
-            sanPham.MaLoai = putSanPham.MaLoai;
             sanPham.MaNhanHieu = putSanPham.MaNhanHieu;
+            sanPham.MaLoai = putSanPham.MaLoai;
 
-            // Xử lý hình ảnh
-            if (putSanPham.HinhAnhMoi != null && putSanPham.HinhAnhMoi.Count > 0)
+            if (hinhanhtailen != null && hinhanhtailen.Count > 0)
             {
-                // Xóa hình ảnh cũ
-                foreach (var hinhAnh in sanPham.HinhAnhs.ToList())
+                // Xóa các hình ảnh hiện có của sản phẩm
+                foreach (var hinhAnh in sanPham.HinhAnhs)
                 {
                     var imagePath = Path.Combine(_webHostEnvironment.WebRootPath, "media/SanPham", hinhAnh.TenHinhAnh);
                     if (System.IO.File.Exists(imagePath))
@@ -135,16 +130,16 @@ namespace api_dong_ho.Controllers
                     _context.HinhAnhs.Remove(hinhAnh);
                 }
 
-                // Thêm hình ảnh mới
-                foreach (var hinhanh in putSanPham.HinhAnhMoi)
+                // Thêm các hình ảnh mới
+                foreach (var hinhanhtailenItem in hinhanhtailen)
                 {
                     string uploadDir = Path.Combine(_webHostEnvironment.WebRootPath, "media/SanPham");
-                    string imageName = Guid.NewGuid().ToString() + "_" + hinhanh.FileName;
+                    string imageName = Guid.NewGuid().ToString() + "_" + hinhanhtailenItem.FileName;
                     string filePath = Path.Combine(uploadDir, imageName);
 
                     using (var stream = new FileStream(filePath, FileMode.Create))
                     {
-                        await hinhanh.CopyToAsync(stream);
+                        await hinhanhtailenItem.CopyToAsync(stream);
                     }
 
                     var hinhAnh = new HinhAnh
@@ -152,52 +147,8 @@ namespace api_dong_ho.Controllers
                         TenHinhAnh = imageName,
                         SanPham = sanPham
                     };
+
                     sanPham.HinhAnhs.Add(hinhAnh);
-                }
-            }
-
-            // Xử lý màu sắc
-            if (putSanPham.MauSacs != null)
-            {
-                // Xóa màu sắc cũ
-                sanPham.MauSacs = sanPham.MauSacs
-                    .Where(m => !putSanPham.MauSacCanXoa.Contains(m.MaMauSac))
-                    .ToList();
-
-                // Thêm màu sắc mới
-                foreach (var mau in putSanPham.MauSacs)
-                {
-               
-                    var mauSac = new MauSac
-                    {
-                        TenMauSac = mau.TenMauSac,
-                        MaSP = sanPham.MaSP
-                    };
-                    sanPham.MauSacs.Add(mauSac);
-                    
-                   
-                }
-            }
-
-            // Xử lý kích thước
-            if (putSanPham.KichThuocs != null)
-            {
-                // Xóa kích thước cũ
-                sanPham.KichThuocs = sanPham.KichThuocs
-                    .Where(k => !putSanPham.KichThuocCanXoa.Contains(k.MaKichThuoc))
-                    .ToList();
-
-                // Thêm kích thước mới
-                foreach (var kichThuoc in putSanPham.KichThuocs)
-                {
-                    var kichThuoc1 = new KichThuoc
-                    {
-                        TenKichThuoc = kichThuoc.TenKichThuoc,
-                        MaSP = sanPham.MaSP
-                    };
-                    sanPham.KichThuocs.Add(kichThuoc1); 
-
-
                 }
             }
 
@@ -219,14 +170,16 @@ namespace api_dong_ho.Controllers
                 }
             }
 
-            return NoContent();
+            return Ok(await _context.SanPham.ToListAsync());
         }
+
+
+
 
         private bool SanPhamExists(int id)
         {
             return _context.SanPham.Any(e => e.MaSP == id);
         }
-
 
 
 

@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using api_dong_ho.Dtos;
+using api_dong_ho.Models;
+using System.ComponentModel.DataAnnotations;
 
 public class PutSanPham
 {
@@ -27,20 +29,7 @@ public class PutSanPham
     public List<string> HinhAnhHienTai { get; set; } = new List<string>();
     public List<IFormFile> HinhAnhMoi { get; set; } = new List<IFormFile>();
 
-    public List<MauSacDto> MauSacs { get; set; } = new List<MauSacDto>();
-    public List<int> MauSacCanXoa { get; set; } = new List<int>();
-    public List<KichThuocDto> KichThuocs { get; set; } = new List<KichThuocDto>();
-    public List<int> KichThuocCanXoa { get; set; } = new List<int>();
 }
 
-public class MauSacDto
-{
 
-    public string? TenMauSac { get; set; }
-}
 
-public class KichThuocDto
-{
-
-    public string? TenKichThuoc { get; set; }
-}
