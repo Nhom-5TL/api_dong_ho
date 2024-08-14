@@ -28,7 +28,7 @@ namespace api_dong_ho.Controllers
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<SanPhamDTO>>> GetSanPham([FromQuery] int limit = 8, [FromQuery] int? lastLoadedId = null)
-        {
+        {   
             var query = _context.SanPham
                 .Include(sp => sp.HinhAnhs)
                 .AsQueryable();
@@ -41,7 +41,7 @@ namespace api_dong_ho.Controllers
 
             var sanPhams = await query
                 .OrderBy(sp => sp.MaSP)
-                .Take(limit)
+                //.Take(limit)
                 .ToListAsync();
 
             var sanPhamDTOs = sanPhams.Select(sp => new SanPhamDTO
