@@ -56,8 +56,12 @@ namespace api_dong_ho.Controllers
                         GhiChu = request.GhiChu,
                         TrangThaiThanhToan = request.TrangThaiThanhToan,
                         MaKh = request.MaKH,
+                        TinhThanh = request.TinhThanh,
+                        QuanHuyen = request.QuanHuyen,
+                        XaPhuong = request.XaPhuong,
                         NgayTao = DateTime.Now,
-                        TrangThai = 0
+                        TrangThai = 0,
+                        TongTien = 0
                     };
 
                     _context.DonHangs.Add(donHang);
@@ -100,11 +104,14 @@ namespace api_dong_ho.Controllers
                         };
 
                         _context.chiTietDonHangs.Add(chiTietDonHang);
+
+
+                        donHang.TongTien += chiTietDonHang.SoLuong * chiTietDonHang.DonGia ?? 0;
                     }
 
                     await _context.SaveChangesAsync();
                     await transaction.CommitAsync();
-
+                    HttpContext.Session.Remove(MySetting.GioHang_KEY);
                     return Ok(new { MaDH = donHang.MaDH });
                 }
                 catch (DbUpdateException dbEx)
