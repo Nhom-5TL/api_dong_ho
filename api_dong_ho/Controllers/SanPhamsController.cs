@@ -379,5 +379,37 @@ namespace api_dong_ho.Controllers
             return Ok(products);
         }
 
+        [HttpPost("update-views/{maSP}")]
+        public async Task<IActionResult> UpdateProductViews(int maSP)
+        {
+            var sanPham = await _context.SanPham.FindAsync(maSP);
+            if (sanPham == null)
+            {
+                return NotFound();
+            }
+
+            // Tăng số lượt xem
+            sanPham.SoLuotXem += 1;
+
+            _context.Entry(sanPham).State = EntityState.Modified;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!SanPhamExists(maSP))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return NoContent();
+        }
     }
 }
